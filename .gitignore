@@ -1,0 +1,64 @@
+### 🛑 General Git Ignore ###
+# Node modules (Client & Server)
+client/node_modules/
+server/node_modules/
+node_modules/
+
+# Build outputs (Next.js & Express)
+client/.next/
+client/out/
+client/build/
+server/dist/
+server/build/
+
+# Environment variables (Secrets)
+client/.env
+client/.env.local
+client/.env.development
+client/.env.production
+server/.env
+server/.env.local
+server/.env.development
+server/.env.production
+
+# Log files (Client & Server)
+client/npm-debug.log
+client/yarn-debug.log
+client/yarn-error.log
+server/npm-debug.log
+server/yarn-debug.log
+server/yarn-error.log
+*.log
+logs/
+server/logs/
+client/logs/
+
+# Cache & Temp Files
+client/.eslintcache
+server/.eslintcache
+client/.swc
+client/.turbo/
+client/.next/cache
+
+# Vercel & Deployment
+client/.vercel
+server/.vercel
+vercel.json
+
+# IDE / Editor Specific
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# System Files (macOS & Windows)
+.DS_Store
+Thumbs.db
+
+# Ignore test coverage reports
+coverage/
+client/coverage/
+server/coverage/
