@@ -1,7 +1,5 @@
 "use client"; // Ensure it's only rendered in the browser
 
-"use client"; // Ensures it runs only in the browser
-
 import {
 	addHabit,
 	completeHabit,
@@ -47,11 +45,11 @@ export default function HabitTracker() {
 	// Mark habit as completed
 	const handleCompleteHabit = (id) => {
 		completeHabit(id);
-		setHabitNames(getHabits()); // Reload updated habits
+		setHabitName(getHabits()); // Reload updated habits
 	};
 
 	return (
-		<div clasName="p-6">
+		<div className="p-6">
 			<h2 className="text-2-xl font-bold mb-4">Habit Tracker</h2>
 
 			{/*Add Habit Form*/}
@@ -60,7 +58,7 @@ export default function HabitTracker() {
 					type="text"
 					value={habitName}
 					onChange={(e) => setHabitName(e.target.value)}
-					placeHolder="Enter a new habit"
+					placeholder="Enter a new habit"
 				></Input>
 				<Button onClick={handleAddHabit}>Add Habit</Button>
 			</div>
@@ -80,7 +78,7 @@ export default function HabitTracker() {
 								onClick={() => handleCompleteHabit(habit.id)}
 							>
 								{habit.completedDates.includes(
-									newDate().toISOString().split("T")[0]
+									new Date().toISOString().split("T")[0]
 								) ? (
 									<CheckCircle className="h-5 w-5 text-green-500" />
 								) : (
@@ -90,7 +88,7 @@ export default function HabitTracker() {
 							{/* Delete Button*/}
 							<Button
 								variant="destructive"
-								onClice={() => handleDeleteHabit(habit.id)}
+								onClick={() => handleDeleteHabit(habit.id)}
 							>
 								Delete
 							</Button>
