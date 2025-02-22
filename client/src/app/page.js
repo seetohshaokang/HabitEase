@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export default function Home() {
+function Home() {
 	return (
 		<div className="h-screen flex flex-col items-center justify-center bg-gray-100">
 			<h1 className="text-4xl font-bold text-gray-900">Habit Tracker</h1>
@@ -13,3 +13,5 @@ export default function Home() {
 		</div>
 	);
 }
+
+export default Home;
