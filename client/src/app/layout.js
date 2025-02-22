@@ -1,4 +1,5 @@
 import { Geist, Geist_Mono } from "next/font/google";
+import AuthWrapper from "./components/authWrapper";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -22,7 +23,8 @@ export default function RootLayout({ children }) {
 			<body
 				className={`${geistSans.variable} ${geistMono.variable} antialiased container mx-auto px-4`}
 			>
-				{children}
+				{/* Wrap everything inside AuthWrapper */}
+				<AuthWrapper>{children}</AuthWrapper>
 			</body>
 		</html>
 	);
