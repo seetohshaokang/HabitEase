@@ -37,14 +37,17 @@ export function deleteHabit(habitId) {
 
 // Mark a habit as completed (track completion dates)
 export function completeHabit(habitId) {
-    const habits = getHabit().map(habit => {
-        if(habit.id === habitId) {
-            return {
-                ...habit,
-                completedDates: [...habit.completedDates, new Date().toISOString()];
-            };
-        }
-        return habit;
-    });
-    saveHabits(habits);
+	const habits = getHabit().map((habit) => {
+		if (habit.id === habitId) {
+			return {
+				...habit,
+				completedDates: [
+					...habit.completedDates,
+					new Date().toISOString(),
+				],
+			};
+		}
+		return habit;
+	});
+	saveHabits(habits);
 }
