@@ -45,7 +45,7 @@ export default function HabitTracker() {
 	// Mark habit as completed
 	const handleCompleteHabit = (id) => {
 		completeHabit(id);
-		setHabitName(getHabits()); // Reload updated habits
+		setHabits(getHabits()); // Reload updated habits
 	};
 
 	return (
