@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import mongoose from "mongoose";
+import app from "./app.js";
 
 dotenv.config();
 const port = process.env.PORT || 5000;
@@ -16,9 +17,7 @@ const getSGTTimeStamp = () => {
 mongoose
 	.connect(process.env.MONGO_URL)
 	.then(() => {
-		console.log(
-			`[${getSGTTimeStamp()}] 🚀 Server is running on port ${port}`
-		);
+		console.log(`[${getSGTTimeStamp()}] MongoDB connection successful`);
 	})
 	.catch((error) =>
 		console.log(
@@ -26,3 +25,7 @@ mongoose
 			error
 		)
 	);
+
+app.listen(port, () => {
+	console.log(`🚀 Server running at http://localhost:${port}`);
+});

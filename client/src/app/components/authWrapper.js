@@ -12,7 +12,7 @@ export default function AuthWrapper({ children }) {
 			if (!token) {
 				try {
 					const response = await fetch(
-						"http://localhost:5000/api/auth/token"
+						"http://localhost:8000/api/auth/token"
 					); // ✅ Fetch JWT token from backend
 
 					if (!response.ok) {

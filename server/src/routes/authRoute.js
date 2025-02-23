@@ -1,3 +1,7 @@
+import dotenv from "dotenv"; //
+import express from "express"; //
+import jwt from "jsonwebtoken"; //
+
 dotenv.config();
 
 const router = express.Router();
@@ -8,7 +12,6 @@ const SECRET_KEY = process.env.JWT_SECRET || "supersecret";
 router.get("/token", (req, res) => {
 	const userId = `anon-${Date.now()}`; // Generate unique ID
 	const token = jwt.sign({ userId }, SECRET_KEY, { expiresIn: "30d" }); // 30-day token
-
 	res.json({ token });
 });
 

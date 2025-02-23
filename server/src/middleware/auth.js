@@ -1,4 +1,8 @@
+import dotenv from "dotenv";
+import jwt from "jsonwebtoken";
+
 dotenv.config();
+
 const SECRET_KEY = process.env.JWT_SECRET;
 
 // Middleware to verify JWT
