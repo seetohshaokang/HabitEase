@@ -1,9 +1,9 @@
 import express from "express";
 import {
 	addHabit,
+	completeHabit,
 	deleteHabit,
 	getHabits,
-	updateHabit,
 } from "../controllers/habitController.js"; // ✅ Fixed typo
 
 import { verifyToken } from "../middleware/auth.js"; // ✅ Ensures only authenticated users access routes
@@ -17,7 +17,7 @@ router.get("/", verifyToken, getHabits);
 router.post("/", verifyToken, addHabit);
 
 // ✅ Update an existing habit (e.g., mark as completed)
-router.put("/:id", verifyToken, updateHabit);
+router.put("/:id/complete", verifyToken, completeHabit);
 
 // ✅ Delete a habit by ID
 router.delete("/:id", verifyToken, deleteHabit);

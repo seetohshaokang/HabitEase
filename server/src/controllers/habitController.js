@@ -37,25 +37,28 @@ export const addHabit = async (req, res) => {
 };
 
 // ✅ Update a habit (only for the logged-in user)
-export const updateHabit = async (req, res) => {
+export const completeHabit = async (req, res) => {
 	try {
 		const userId = req.userId;
 		const { id } = req.params;
-		const { streak, lastCompleted } = req.body;
+		const today = new Date().toISOString().split("T")[0];
 
-		const updatedHabit = await Habit.findOneAndUpdate(
-			{ _id: id, userId }, // Ensure only the user's habit is updated
-			{ streak, lastCompleted },
-			{ new: true }
-		);
+		const habit = await Habit.findOne({ _id: id, userId });
 
-		if (!updatedHabit) {
+		if (!habit) {
 			return res
 				.status(404)
 				.json({ message: "Habit not found or unauthorized" });
 		}
 
-		res.status(200).json(updatedHabit);
+		// Prevent duplicate entries for the same day
+		if (!habit.completedDates.includes(today)) {
+			habit.completedDates.push(today);
+			habit.streak += 1;
+			await habit.save();
+		}
+
+		res.status(200).json(habit);
 	} catch (error) {
 		res.status(500).json({ message: "Error updating habit", error });
 	}
