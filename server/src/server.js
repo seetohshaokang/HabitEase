@@ -5,19 +5,25 @@ import app from "./app.js";
 dotenv.config();
 const port = process.env.PORT || 8000;
 
-// Function to get timestamp in Singapore time (UTC+8)
+// ✅ Function to get timestamp in Singapore Time (SGT)
 const getSGTTimeStamp = () => {
-	const now = new Date();
-	const sgtOffset = 8 * 60 * 60 * 1000; // Singapore is UTC+8
-	return new Date(now.getTime() + sgtOffset).toLocaleString("en-SG", {
+	return new Intl.DateTimeFormat("en-SG", {
 		timeZone: "Asia/Singapore",
-	});
+		year: "numeric",
+		month: "2-digit",
+		day: "2-digit",
+		hour: "2-digit",
+		minute: "2-digit",
+		second: "2-digit",
+		hour12: false, // ✅ Ensures 24-hour format
+	}).format(new Date());
 };
 
+// ✅ MongoDB Connection
 mongoose
 	.connect(process.env.MONGO_URL)
 	.then(() => {
-		console.log(`[${getSGTTimeStamp()}] MongoDB connection successful`);
+		console.log(`[${getSGTTimeStamp()}] ✅ MongoDB connection successful`);
 	})
 	.catch((error) =>
 		console.log(
@@ -26,6 +32,9 @@ mongoose
 		)
 	);
 
+// ✅ Start Express Server with SGT timestamp
 app.listen(port, () => {
-	console.log(`🚀 Server running at http://localhost:${port}`);
+	console.log(
+		`[${getSGTTimeStamp()}] 🚀 Server running at http://localhost:${port}`
+	);
 });
