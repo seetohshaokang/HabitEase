@@ -3,9 +3,15 @@ import Habit from "../models/Habit.js";
 // ✅ Get habits for the logged-in user
 export const getHabits = async (req, res) => {
 	try {
+		if (!req.user || !req.user.id) {
+			return res
+				.status(401)
+				.json({ error: "Unauthorized: No user found" });
+		}
+
 		const habits = await Habit.find({ userId: req.user.id });
 
-		// Format completedRecords to always return count = 0 if the day is missing
+		// Format data to include past 365 days with `count: 0` if missing
 		const formattedHabits = habits.map((habit) => {
 			const completedMap = new Map(
 				habit.completedRecords.map((r) => [r.date, r.count])

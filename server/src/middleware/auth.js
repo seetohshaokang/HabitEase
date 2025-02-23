@@ -5,19 +5,23 @@ dotenv.config();
 
 const SECRET_KEY = process.env.JWT_SECRET;
 
-// Middleware to verify JWT
-export function verifyToken(req, res, next) {
-	const token = req.headers.authorization?.split(" ")[1];
+export const verifyToken = (req, res, next) => {
+	// ✅ Use named export
+	const authHeader = req.headers.authorization;
 
-	if (!token) {
-		return res.status(403).json({ error: "No token provided" });
+	if (!authHeader || !authHeader.startsWith("Bearer ")) {
+		return res
+			.status(401)
+			.json({ error: "Unauthorized: No token provided" });
 	}
 
+	const token = authHeader.split(" ")[1]; // Extract token
 	try {
 		const decoded = jwt.verify(token, SECRET_KEY);
-		req.userId = decoded.userId; // Attach userId to request
+		req.user = decoded; // ✅ Attach user info
 		next();
 	} catch (error) {
-		return res.status(401).json({ error: "Invalid token" });
+		console.error("JWT Verification Error:", error);
+		res.status(403).json({ error: "Invalid or expired token" });
 	}
-}
+};
