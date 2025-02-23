@@ -3,38 +3,17 @@ import Habit from "../models/Habit.js";
 // ✅ Get habits for the logged-in user
 export const getHabits = async (req, res) => {
 	try {
+		console.log("Decoded User Object:", req.user); // ✅ Debugging line
+
 		if (!req.user || !req.user.id) {
+			console.error("User ID is missing in request:", req.user);
 			return res
 				.status(401)
 				.json({ error: "Unauthorized: No user found" });
 		}
 
 		const habits = await Habit.find({ userId: req.user.id });
-
-		// Format data to include past 365 days with `count: 0` if missing
-		const formattedHabits = habits.map((habit) => {
-			const completedMap = new Map(
-				habit.completedRecords.map((r) => [r.date, r.count])
-			);
-			const last365Days = [...Array(365)]
-				.map((_, i) => {
-					const date = new Date();
-					date.setDate(date.getDate() - i);
-					const formattedDate = date.toISOString().split("T")[0];
-					return {
-						date: formattedDate,
-						count: completedMap.get(formattedDate) || 0,
-					};
-				})
-				.reverse();
-
-			return {
-				...habit.toObject(),
-				completedRecords: last365Days,
-			};
-		});
-
-		res.status(200).json(formattedHabits);
+		res.status(200).json(habits);
 	} catch (error) {
 		console.error("Error fetching habits:", error);
 		res.status(500).json({ error: "Server error" });
