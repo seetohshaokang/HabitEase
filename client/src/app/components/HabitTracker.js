@@ -168,7 +168,7 @@ export default function HabitTracker() {
 				{habits.map((habit) => (
 					<li
 						key={habit._id}
-						className="bg-gray-800 p-4 rounded shadow-md flex flex-col"
+						className="bg-blue-400 p-4 rounded shadow-md flex flex-col"
 					>
 						{/* Habit Logo + Name */}
 						<div className="flex items-center space-x-2">
