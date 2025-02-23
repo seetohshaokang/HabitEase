@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import app from "./app.js";
 
 dotenv.config();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 8000;
 
 // Function to get timestamp in Singapore time (UTC+8)
 const getSGTTimeStamp = () => {

@@ -7,7 +7,7 @@ const app = express();
 
 app.use(
 	cors({
-		origin: ["http://localhost:3000", "http://localhost:5000"], // ✅ Allow frontend requests from both ports
+		origin: ["http://localhost:3000", "http://localhost:8000"], // ✅ Allow frontend requests from both ports
 		credentials: true, // ✅ Allow cookies & auth headers
 		methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // ✅ Allow HTTP methods
 		allowedHeaders: ["Content-Type", "Authorization"], // ✅ Allowed headers

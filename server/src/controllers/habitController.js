@@ -16,7 +16,7 @@ export const getHabits = async (req, res) => {
 export const addHabit = async (req, res) => {
 	try {
 		const userId = req.userId; // Extracted from JWT middleware
-		const { name } = req.body;
+		const { name, logo } = req.body;
 
 		if (!name) {
 			return res.status(400).json({ message: "Habit name is required" });
@@ -24,6 +24,7 @@ export const addHabit = async (req, res) => {
 
 		const newHabit = new Habit({
 			name,
+			logo: logo || "default-icon.png",
 			userId,
 			streak: 0,
 			lastCompleted: null,
