@@ -5,7 +5,10 @@ const HabitSchema = new mongoose.Schema({
 	name: { type: String, required: true },
 	logo: { type: String, default: "default-icon.png" },
 	streak: { type: Number, default: 0 },
-	completedDates: { type: [String], default: [] },
+	completedRecords: {
+		type: [{ date: String, count: Number }], // Track completion frequency per day
+		default: [],
+	},
 });
 
 export default mongoose.model("Habit", HabitSchema);
