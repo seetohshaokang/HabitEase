@@ -1,4 +1,4 @@
-"use client"; // Ensure it's only rendered in the browser
+"use client"; // ✅ Ensures this runs on the client side
 
 import HabitHeatmap from "@/components/HabitHeatmap";
 import { Button } from "@/components/ui/button";
@@ -13,22 +13,19 @@ export default function HabitTracker() {
 	const [loading, setLoading] = useState(true);
 	const [token, setToken] = useState(null);
 
-	// ✅ Wait for `AuthWrapper.js` to set the token in localStorage
+	// ✅ Fetch JWT token from `localStorage` when component loads
 	useEffect(() => {
 		const storedToken = localStorage.getItem("userToken");
-
 		if (!storedToken) {
-			console.warn("No token found in localStorage yet.");
-			return; // Don't fetch habits until token exists
+			console.warn("No token found in localStorage.");
+			return;
 		}
-
-		console.log("JWT Token found:", storedToken);
 		setToken(storedToken);
 	}, []);
 
-	// ✅ Fetch Habits from MongoDB (Wait for `token` before fetching)
+	// ✅ Fetch Habits from MongoDB
 	useEffect(() => {
-		if (!token) return; // ✅ Don't fetch until token is available
+		if (!token) return;
 
 		async function fetchHabits() {
 			try {
@@ -49,7 +46,6 @@ export default function HabitTracker() {
 				}
 
 				const data = await response.json();
-				console.log("Fetched habits:", data);
 				setHabits(data);
 			} catch (error) {
 				console.error("Failed to fetch habits:", error);
@@ -59,7 +55,7 @@ export default function HabitTracker() {
 		}
 
 		fetchHabits();
-	}, [token]); // ✅ Run only when `token` is set
+	}, [token]);
 
 	// ✅ Add a new Habit (POST request to backend)
 	const handleAddHabit = async () => {
@@ -95,6 +91,25 @@ export default function HabitTracker() {
 		}
 	};
 
+	// ✅ Delete a habit
+	const handleDeleteHabit = async (id) => {
+		if (!token) return;
+		try {
+			const response = await fetch(
+				`http://localhost:8000/api/habits/${id}`,
+				{
+					method: "DELETE",
+					headers: { Authorization: `Bearer ${token}` },
+				}
+			);
+			if (!response.ok) throw new Error("Failed to delete habit");
+
+			setHabits(habits.filter((habit) => habit._id !== id));
+		} catch (error) {
+			console.error("Error deleting habit:", error);
+		}
+	};
+
 	// ✅ Mark habit as completed
 	const handleCompleteHabit = async (id) => {
 		if (!token) return;
@@ -118,6 +133,7 @@ export default function HabitTracker() {
 		}
 	};
 
+	// ✅ Display loading state before habits are available
 	if (loading) {
 		return (
 			<div className="text-center text-gray-500">Loading habits...</div>
@@ -125,11 +141,11 @@ export default function HabitTracker() {
 	}
 
 	return (
-		<div className="p-6">
+		<div className="p-6 w-full min-h-screen bg-gray-900 text-white">
 			<h2 className="text-2xl font-bold mb-4">Habit Tracker</h2>
 
 			{/* Add Habit Form */}
-			<div className="flex space-x-2 mb-6">
+			<div className="flex flex-wrap space-x-2 mb-6">
 				<Input
 					type="text"
 					value={habitName}
@@ -152,8 +168,9 @@ export default function HabitTracker() {
 				{habits.map((habit) => (
 					<li
 						key={habit._id}
-						className="flex flex-col bg-gray-100 p-4 rounded"
+						className="bg-gray-800 p-4 rounded shadow-md flex flex-col"
 					>
+						{/* Habit Logo + Name */}
 						<div className="flex items-center space-x-2">
 							<span className="text-2xl">{habit.logo}</span>
 							<span className="text-lg font-semibold">
@@ -161,9 +178,12 @@ export default function HabitTracker() {
 							</span>
 						</div>
 
-						<HabitHeatmap
-							completedRecords={habit.completedRecords}
-						/>
+						{/* Responsive Scrollable Heatmap */}
+						<div className="w-full overflow-x-auto">
+							<HabitHeatmap
+								completedRecords={habit.completedRecords}
+							/>
+						</div>
 
 						{/* Action Buttons */}
 						<div className="flex space-x-2 mt-2">
@@ -175,13 +195,7 @@ export default function HabitTracker() {
 							</Button>
 							<Button
 								variant="destructive"
-								onClick={() =>
-									setHabits(
-										habits.filter(
-											(h) => h._id !== habit._id
-										)
-									)
-								}
+								onClick={() => handleDeleteHabit(habit._id)}
 							>
 								Delete
 							</Button>

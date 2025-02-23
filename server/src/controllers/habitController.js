@@ -3,16 +3,16 @@ import Habit from "../models/Habit.js";
 // ✅ Get habits for the logged-in user
 export const getHabits = async (req, res) => {
 	try {
-		console.log("Decoded User Object:", req.user); // ✅ Debugging line
+		console.log("Decoded User Object:", req.user); // ✅ Debugging
 
-		if (!req.user || !req.user.id) {
+		if (!req.user || !req.user.userId) {
 			console.error("User ID is missing in request:", req.user);
 			return res
 				.status(401)
 				.json({ error: "Unauthorized: No user found" });
 		}
 
-		const habits = await Habit.find({ userId: req.user.id });
+		const habits = await Habit.find({ userId: req.user.userId }); // ✅ Fix userId reference
 		res.status(200).json(habits);
 	} catch (error) {
 		console.error("Error fetching habits:", error);
@@ -23,7 +23,7 @@ export const getHabits = async (req, res) => {
 // ✅ Add a new habit for the logged-in user
 export const addHabit = async (req, res) => {
 	try {
-		const userId = req.userId; // Extracted from JWT middleware
+		const userId = req.user.userId; // ✅ Fix userId extraction
 		const { name, logo } = req.body;
 
 		if (!name) {
@@ -32,20 +32,22 @@ export const addHabit = async (req, res) => {
 
 		const newHabit = new Habit({
 			name,
-			logo: logo || "default-icon.png",
+			logo: logo || "🔥", // ✅ Default icon
 			userId,
 			streak: 0,
 			lastCompleted: null,
+			completedRecords: [],
 		});
 		await newHabit.save();
 
 		res.status(201).json(newHabit);
 	} catch (error) {
+		console.error("Error creating habit:", error);
 		res.status(500).json({ message: "Error creating habit", error });
 	}
 };
 
-// ✅ Update a habit (only for the logged-in user)
+// ✅ Mark a habit as completed
 export const completeHabit = async (req, res) => {
 	try {
 		const { id } = req.params;
@@ -58,13 +60,27 @@ export const completeHabit = async (req, res) => {
 			(record) => record.date === today
 		);
 
-		// If the habit was already completed today, increment the count
 		if (recordIndex !== -1) {
+			// ✅ If already completed today, just increase count
 			habit.completedRecords[recordIndex].count += 1;
 		} else {
-			// Otherwise, add a new record for today
+			// ✅ First completion of the day → add new record & increase streak
 			habit.completedRecords.push({ date: today, count: 1 });
-			habit.streak += 1; // Increase streak only if first completion of the day
+
+			// ✅ Streak logic: Only increase if yesterday was also completed
+			const yesterday = new Date();
+			yesterday.setDate(yesterday.getDate() - 1);
+			const yesterdayStr = yesterday.toISOString().split("T")[0];
+
+			const yesterdayRecord = habit.completedRecords.find(
+				(record) => record.date === yesterdayStr
+			);
+
+			if (yesterdayRecord) {
+				habit.streak += 1;
+			} else {
+				habit.streak = 1; // Reset streak if yesterday was not completed
+			}
 		}
 
 		await habit.save();
@@ -78,7 +94,7 @@ export const completeHabit = async (req, res) => {
 // ✅ Delete a habit (only for the logged-in user)
 export const deleteHabit = async (req, res) => {
 	try {
-		const userId = req.userId;
+		const userId = req.user.userId; // ✅ Fix userId extraction
 		const { id } = req.params;
 
 		const deletedHabit = await Habit.findOneAndDelete({ _id: id, userId });
@@ -91,6 +107,7 @@ export const deleteHabit = async (req, res) => {
 
 		res.status(200).json({ message: "Habit deleted successfully" });
 	} catch (error) {
+		console.error("Error deleting habit:", error);
 		res.status(500).json({ message: "Error deleting habit", error });
 	}
 };

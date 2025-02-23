@@ -15,7 +15,15 @@ export const verifyToken = (req, res, next) => {
 	const token = authHeader.split(" ")[1]; // Extract token
 	try {
 		const decoded = jwt.verify(token, SECRET_KEY);
-		req.user = decoded; // ❌ Might not contain `id`
+		console.log("Decoded JWT Payload:", decoded); // ✅ Debugging line
+
+		if (!decoded.userId) {
+			return res
+				.status(401)
+				.json({ error: "Unauthorized: Token missing user ID" });
+		}
+
+		req.user = { userId: decoded.userId }; // ✅ Fix: Explicitly assign `userId`
 		next();
 	} catch (error) {
 		console.error("JWT Verification Error:", error);
