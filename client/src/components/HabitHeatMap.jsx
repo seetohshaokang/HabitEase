@@ -1,50 +1,132 @@
+import { endOfWeek, format, startOfWeek, subWeeks } from "date-fns";
+import React, { useEffect, useRef, useState } from "react";
+import CalendarHeatmap from "react-calendar-heatmap";
+import "react-calendar-heatmap/dist/styles.css";
+
 /**
- * Custom GitHub-style Heatmap Component (Maximizes Card Space)
+ * GitHub-Style Responsive Heatmap for Habit Tracking
  * @param {Array} completedDates - Array of completed habit dates (ISO strings).
  */
 export default function HabitHeatmap({ completedDates = [] }) {
-	const today = new Date();
-	const totalDays = 60; // Extend to last 60 days for a wider grid
-	const columns = 10; // Number of columns for better card fit
-	const rows = Math.ceil(totalDays / columns); // Automatically adjust rows
+	const [habitData, setHabitData] = useState([]);
+	const [visibleWeeks, setVisibleWeeks] = useState(52); // Default to full year
+	const heatmapRef = useRef(null);
 
-	// Generate last 60 days dynamically
-	const last60Days = [...Array(totalDays)].map((_, i) => {
-		const date = new Date();
-		date.setDate(today.getDate() - i);
-		return date.toISOString().split("T")[0]; // Format: YYYY-MM-DD
-	});
+	// Effect to adjust visible weeks based on browser width
+	useEffect(() => {
+		const handleResize = () => {
+			if (heatmapRef.current) {
+				const width = heatmapRef.current.offsetWidth;
+				const newVisibleWeeks = Math.max(
+					12,
+					Math.floor((width - 50) / 13)
+				); // Adjust weeks based on width
+				setVisibleWeeks(newVisibleWeeks);
+			}
+		};
 
-	// Convert completed dates into a grid structure
-	const data = [];
-	for (let i = 0; i < rows; i++) {
-		data[i] = last60Days
-			.slice(i * columns, (i + 1) * columns)
-			.map((date) => (completedDates.includes(date) ? 1 : 0));
-	}
+		handleResize(); // Initial check
+		window.addEventListener("resize", handleResize);
+		return () => window.removeEventListener("resize", handleResize);
+	}, []);
 
-	// Function to determine color intensity
-	const getColor = (value) => {
-		if (value >= 5) return "bg-green-700"; // High activity
-		if (value >= 3) return "bg-green-500"; // Medium activity
-		if (value >= 1) return "bg-green-300"; // Low activity
-		return "bg-gray-200"; // Not completed
+	// Convert completedDates into required format
+	useEffect(() => {
+		const formattedData = completedDates.map((date) => ({
+			date,
+			count: 1,
+		}));
+		setHabitData(formattedData);
+	}, [completedDates]);
+
+	const toggleHabit = (date) => {
+		const newData = [...habitData];
+		const existingIndex = newData.findIndex((item) => item.date === date);
+
+		if (existingIndex >= 0) {
+			newData.splice(existingIndex, 1);
+		} else {
+			newData.push({ date, count: 1 });
+		}
+
+		setHabitData(newData);
 	};
 
+	const today = new Date();
+	const endDate = endOfWeek(today);
+	const startDate = startOfWeek(subWeeks(endDate, visibleWeeks - 1));
+
+	// Weekday Labels
+	const weekdayLabels = ["Mon", "Wed", "Fri"];
+
 	return (
-		<div className="flex justify-center">
-			<div className="grid grid-cols-10 gap-[2px] p-2 bg-gray-100 rounded-lg">
-				{data.flat().map((value, index) => (
-					<div
-						key={index}
-						className={`w-6 h-6 sm:w-7 sm:h-7 rounded ${getColor(
-							value
-						)}`}
-						title={`Day ${index + 1} - Completed: ${
-							value ? "Yes" : "No"
-						}`}
-					></div>
-				))}
+		<div className="bg-white p-4 rounded-lg shadow">
+			<h2 className="text-xl font-semibold mb-2">
+				Habit Tracking Heatmap
+			</h2>
+
+			{/* Scrollable Heatmap Container */}
+			<div className="relative overflow-x-auto pb-2" ref={heatmapRef}>
+				{/* Fixed Left Day Labels */}
+				<div
+					className="sticky left-0 z-10 bg-white flex flex-col justify-between text-xs text-gray-400 pt-2 pb-1 pr-2"
+					style={{ height: "100%", float: "left" }}
+				>
+					{weekdayLabels.map((day) => (
+						<span
+							key={day}
+							style={{
+								height: "33.33%",
+								display: "flex",
+								alignItems: "center",
+							}}
+						>
+							{day}
+						</span>
+					))}
+				</div>
+
+				{/* Heatmap Grid with Horizontal Scrolling */}
+				<div
+					style={{
+						width: `${visibleWeeks * 13}px`,
+						paddingLeft: "40px",
+					}}
+				>
+					<CalendarHeatmap
+						startDate={startDate}
+						endDate={endDate}
+						values={habitData}
+						classForValue={(value) => {
+							if (!value) return "color-empty";
+							return `color-scale-${value.count}`;
+						}}
+						onClick={(value) => value && toggleHabit(value.date)}
+						titleForValue={(value) => {
+							if (!value) return "";
+							return `${format(
+								new Date(value.date),
+								"MMM d, yyyy"
+							)}: ${value.count ? "Completed" : "Not completed"}`;
+						}}
+						transformDayElement={(element, value, index) =>
+							React.cloneElement(element, {
+								rx: 2,
+								ry: 2,
+								width: 10,
+								height: 10,
+								x: element.props.x + 1,
+								y: element.props.y + 1,
+							})
+						}
+						showWeekdayLabels={false}
+					/>
+				</div>
+			</div>
+
+			{/* Horizontal Scrollbar */}
+			<div className="overflow-x-auto mt-2">
+				<div style={{ width: `${visibleWeeks * 13}px` }}></div>
 			</div>
 		</div>
 	);
