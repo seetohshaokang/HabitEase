@@ -3,7 +3,7 @@
 import HabitHeatmap from "@/components/HabitHeatmap";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CheckCircle } from "lucide-react"; // Icons from `lucide-react`
+import { CheckCircle, Trash2 } from "lucide-react"; // Icons from `lucide-react`
 import { useEffect, useState } from "react";
 
 export default function HabitTracker() {
@@ -91,25 +91,6 @@ export default function HabitTracker() {
 		}
 	};
 
-	// ✅ Delete a habit
-	const handleDeleteHabit = async (id) => {
-		if (!token) return;
-		try {
-			const response = await fetch(
-				`http://localhost:8000/api/habits/${id}`,
-				{
-					method: "DELETE",
-					headers: { Authorization: `Bearer ${token}` },
-				}
-			);
-			if (!response.ok) throw new Error("Failed to delete habit");
-
-			setHabits(habits.filter((habit) => habit._id !== id));
-		} catch (error) {
-			console.error("Error deleting habit:", error);
-		}
-	};
-
 	// ✅ Mark habit as completed
 	const handleCompleteHabit = async (id) => {
 		if (!token) return;
@@ -125,11 +106,42 @@ export default function HabitTracker() {
 				throw new Error("Failed to mark habit as completed");
 
 			const updatedHabit = await response.json();
-			setHabits(
-				habits.map((habit) => (habit._id === id ? updatedHabit : habit))
+
+			// ✅ Update completedRecords dynamically in state
+			setHabits((prevHabits) =>
+				prevHabits.map((habit) =>
+					habit._id === id
+						? {
+								...habit,
+								completedRecords: updatedHabit.completedRecords,
+						  }
+						: habit
+				)
 			);
 		} catch (error) {
 			console.error("Error completing habit:", error);
+		}
+	};
+
+	// ✅ Delete a habit
+	const handleDeleteHabit = async (id) => {
+		if (!token) return;
+		try {
+			const response = await fetch(
+				`http://localhost:8000/api/habits/${id}`,
+				{
+					method: "DELETE",
+					headers: { Authorization: `Bearer ${token}` },
+				}
+			);
+			if (!response.ok) throw new Error("Failed to delete habit");
+
+			// ✅ Remove habit from state
+			setHabits((prevHabits) =>
+				prevHabits.filter((habit) => habit._id !== id)
+			);
+		} catch (error) {
+			console.error("Error deleting habit:", error);
 		}
 	};
 
@@ -171,17 +183,27 @@ export default function HabitTracker() {
 						className="bg-blue-400 p-4 rounded shadow-md flex flex-col"
 					>
 						{/* Habit Logo + Name */}
-						<div className="flex items-center space-x-2">
-							<span className="text-2xl">{habit.logo}</span>
-							<span className="text-lg font-semibold">
-								{habit.name}
-							</span>
+						<div className="flex items-center justify-between">
+							<div className="flex items-center space-x-2">
+								<span className="text-2xl">{habit.logo}</span>
+								<span className="text-lg font-semibold">
+									{habit.name}
+								</span>
+							</div>
+							{/* Delete Button */}
+							<Button
+								variant="destructive"
+								onClick={() => handleDeleteHabit(habit._id)}
+							>
+								<Trash2 className="h-5 w-5 text-white" />
+							</Button>
 						</div>
 
 						{/* Responsive Scrollable Heatmap */}
 						<div className="w-full overflow-x-auto">
 							<HabitHeatmap
 								completedRecords={habit.completedRecords}
+								habitId={habit._id}
 							/>
 						</div>
 
@@ -192,12 +214,6 @@ export default function HabitTracker() {
 								onClick={() => handleCompleteHabit(habit._id)}
 							>
 								<CheckCircle className="h-5 w-5 text-green-500" />
-							</Button>
-							<Button
-								variant="destructive"
-								onClick={() => handleDeleteHabit(habit._id)}
-							>
-								Delete
 							</Button>
 						</div>
 					</li>

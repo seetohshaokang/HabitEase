@@ -52,6 +52,7 @@ export const completeHabit = async (req, res) => {
 	try {
 		const { id } = req.params;
 		const habit = await Habit.findById(id);
+		console.log("Marking habit as completed");
 
 		if (!habit) return res.status(404).json({ error: "Habit not found" });
 
@@ -82,7 +83,6 @@ export const completeHabit = async (req, res) => {
 				habit.streak = 1; // Reset streak if yesterday was not completed
 			}
 		}
-
 		await habit.save();
 		res.status(200).json(habit);
 	} catch (error) {
