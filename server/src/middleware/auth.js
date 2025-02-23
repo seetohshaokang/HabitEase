@@ -4,11 +4,8 @@ import jwt from "jsonwebtoken";
 dotenv.config();
 
 const SECRET_KEY = process.env.JWT_SECRET;
-
 export const verifyToken = (req, res, next) => {
-	// ✅ Use named export
 	const authHeader = req.headers.authorization;
-
 	if (!authHeader || !authHeader.startsWith("Bearer ")) {
 		return res
 			.status(401)
@@ -18,7 +15,7 @@ export const verifyToken = (req, res, next) => {
 	const token = authHeader.split(" ")[1]; // Extract token
 	try {
 		const decoded = jwt.verify(token, SECRET_KEY);
-		req.user = decoded; // ✅ Attach user info
+		req.user = decoded; // ❌ Might not contain `id`
 		next();
 	} catch (error) {
 		console.error("JWT Verification Error:", error);
