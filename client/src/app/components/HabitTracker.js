@@ -1,9 +1,6 @@
 "use client"; // Ensure it's only rendered in the browser
 
 import HabitHeatmap from "@/components/HabitHeatmap";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { CheckCircle, Circle } from "lucide-react"; // Icons from `lucide-react`
 import { useEffect, useState } from "react";
 
 export default function HabitTracker() {
@@ -133,72 +130,27 @@ export default function HabitTracker() {
 	};
 
 	return (
-		<div className="p-6">
-			<h2 className="text-2xl font-bold mb-4">Habit Tracker</h2>
-
-			{/* Add Habit Form */}
-			<div className="flex space-x-2 mb-6">
-				<Input
-					type="text"
-					value={habitName}
-					onChange={(e) => setHabitName(e.target.value)}
-					placeholder="Enter a new habit"
-					disabled={loading}
-				/>
-				<Input
-					type="text"
-					value={habitLogo}
-					onChange={(e) => setHabitLogo(e.target.value)}
-					placeholder="Enter emoji or image URL"
-					disabled={loading}
-				/>
-				<Button onClick={handleAddHabit} disabled={loading || !token}>
-					{loading ? "Adding..." : "Add Habit"}
-				</Button>
-			</div>
+		<div className="w-full max-w-4xl mx-auto p-4 bg-white shadow-md rounded-lg">
+			<h2 className="text-xl font-bold text-center mb-4">Your Habits</h2>
 
 			{/* Habit List */}
 			<ul className="space-y-4">
-				{habits.map((habit) => (
-					<li
-						key={habit._id}
-						className="flex flex-col bg-gray-100 p-4 rounded"
-					>
-						{/* Habit Logo + Name */}
-						<div className="flex items-center space-x-2">
-							<span className="text-2xl">{habit.logo}</span>{" "}
-							{/* ✅ Display Custom Logo */}
-							<span className="text-lg font-semibold">
-								{habit.name}
-							</span>
-						</div>
+				{/* Example Habit Card */}
+				<li className="p-4 bg-gray-100 rounded-md shadow-sm flex flex-col md:flex-row md:items-center md:justify-between">
+					{/* Habit Info */}
+					<div className="flex items-center space-x-2">
+						<span className="text-2xl">🔥</span>{" "}
+						{/* Example Emoji */}
+						<span className="text-lg font-semibold">
+							Daily Exercise
+						</span>
+					</div>
 
-						{/* GitHub-Style Completion Display */}
-						<HabitHeatmap completedDates={habit.completedDates} />
-
-						{/* Action Buttons */}
-						<div className="flex space-x-2 mt-2">
-							<Button
-								variant="outline"
-								onClick={() => handleCompleteHabit(habit._id)}
-							>
-								{habit.completedDates.includes(
-									new Date().toISOString().split("T")[0]
-								) ? (
-									<CheckCircle className="h-5 w-5 text-green-500" />
-								) : (
-									<Circle className="h-5 w-5 text-gray-500" />
-								)}
-							</Button>
-							<Button
-								variant="destructive"
-								onClick={() => handleDeleteHabit(habit._id)}
-							>
-								Delete
-							</Button>
-						</div>
-					</li>
-				))}
+					{/* Heatmap */}
+					<div className="w-full overflow-x-auto">
+						<HabitHeatmap />
+					</div>
+				</li>
 			</ul>
 		</div>
 	);
