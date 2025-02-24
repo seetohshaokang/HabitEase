@@ -9,10 +9,11 @@ export default function HabitHeatmap({ completedRecords = [] }) {
 		const totalDays = 365;
 		const rows = 7; // 7 rows for days of the week (Sun-Sat)
 		const columns = Math.ceil(totalDays / rows); // ~52 weeks
-		const squareSize = 15; // Size of each square
-		const gapSize = 2; // Space between squares
-		const width = columns * (squareSize + gapSize);
-		const height = rows * (squareSize + gapSize) + 40;
+		const squareSize = 15; // ✅ Fixed size for consistency
+		const gapSize = 1; // ✅ Keeps proper spacing
+		const maxColumns = 52; // ✅ Maximum weeks (1 year)
+		const width = maxColumns * (squareSize + gapSize); // ✅ Fixed width, prevents overexpansion
+		const height = rows * (squareSize + gapSize) + 20; // ✅ Fixed height, prevents vertical scrolling
 
 		// ✅ Convert completedRecords to a Set for fast lookup
 		const completedSet = new Set(
@@ -47,16 +48,16 @@ export default function HabitHeatmap({ completedRecords = [] }) {
 		const svg = d3
 			.select(heatmapRef.current)
 			.append("svg")
-			.attr("width", width + 50)
-			.attr("height", height + 40)
+			.attr("width", width + 50) // ✅ Fixed width for consistent scrolling
+			.attr("height", height + 40) // ✅ Increased height to fit day labels
 			.append("g")
-			.attr("transform", "translate(40, 40)");
+			.attr("transform", "translate(40, 20)");
 
 		// ✅ Define Color Scale (GitHub style)
 		const colorScale = d3
 			.scaleLinear()
 			.domain([0, 1]) // 0 = not completed, 1 = completed
-			.range(["#ebedf0", "#40c463"]); // Gray → Green
+			.range(["#1b1f23", "#40c463"]); // Dark background → Green
 
 		// ✅ Append squares (cells)
 		svg.selectAll(".day-square")
@@ -64,14 +65,14 @@ export default function HabitHeatmap({ completedRecords = [] }) {
 			.enter()
 			.append("rect")
 			.attr("x", (_, i) => Math.floor(i / rows) * (squareSize + gapSize))
-			.attr("y", (_, i) => (i % rows) * (squareSize + gapSize))
+			.attr("y", (_, i) => (i % rows) * (squareSize + gapSize) + 15) // ✅ Prevents overlap with labels
 			.attr("width", squareSize)
 			.attr("height", squareSize)
-			.attr("rx", 3)
-			.attr("ry", 3)
-			.attr("fill", (d) => (d ? colorScale(d.count) : "transparent"))
-			.attr("stroke", "#333")
-			.attr("stroke-width", 0.3);
+			.attr("rx", 2)
+			.attr("ry", 2)
+			.attr("fill", (d) => (d ? colorScale(d.count) : "#1b1f23")) // ✅ Background color matches GitHub style
+			.attr("stroke", "#0d1117")
+			.attr("stroke-width", 0.2);
 
 		// ✅ Month Labels (Ensure only one per month)
 		const monthLabels = svg
@@ -91,7 +92,7 @@ export default function HabitHeatmap({ completedRecords = [] }) {
 				monthLabels
 					.append("text")
 					.attr("x", col * (squareSize + gapSize) + squareSize / 2)
-					.attr("y", -10)
+					.attr("y", -5)
 					.attr("text-anchor", "middle")
 					.attr("fill", "#9e9e9e")
 					.attr("font-size", "12px")
@@ -106,8 +107,8 @@ export default function HabitHeatmap({ completedRecords = [] }) {
 			}
 		});
 
-		// ✅ Add Day Labels
-		const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+		// ✅ Day Labels (Left side of heatmap)
+		const days = ["S", "M", "T", "W", "T", "F", "S"];
 		svg.selectAll(".day-label")
 			.data(days)
 			.enter()
@@ -122,7 +123,17 @@ export default function HabitHeatmap({ completedRecords = [] }) {
 	}, [completedRecords]); // ✅ Re-run effect when `completedRecords` change
 
 	return (
-		<div className="w-full overflow-x-auto bg-gray-900 p-4 rounded-lg">
+		<div
+			className="w-full max-w-4xl overflow-x-auto bg-[#0d1117] p-4 rounded-lg scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900"
+			style={{
+				scrollbarColor: "#4a5568 #1a202c",
+				height: "auto", // ✅ Allow proper height calculation
+				whiteSpace: "nowrap", // ✅ Prevents breaking onto a new line
+				display: "flex",
+				alignItems: "center",
+				justifyContent: "center",
+			}}
+		>
 			<div ref={heatmapRef}></div>
 		</div>
 	);
