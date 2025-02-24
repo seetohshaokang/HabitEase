@@ -89,7 +89,7 @@ export default function HabitTracker() {
 						<h2 className="text-xl font-bold text-gray-800 mb-4">
 							Add New Habit
 						</h2>
-						<HabitForm onAddHabit={handleAddHabit} />
+						<HabitForm onSubmit={handleAddHabit} />
 						<Button
 							onClick={() => setIsModalOpen(false)}
 							className="w-full mt-2 bg-red-500 hover:bg-red-600"
