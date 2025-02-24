@@ -1,15 +1,15 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react"; // ✅ Import Plus icon for Add button
+import { Plus, X } from "lucide-react"; // ✅ Import `X` for close button
 import { useEffect, useState } from "react";
-import HabitForm from "./HabitForm"; // ✅ Handles form inside modal
-import HabitList from "./HabitList"; // ✅ Renders habits list
+import HabitForm from "./HabitForm";
+import HabitList from "./HabitList";
 
 export default function HabitTracker() {
 	const [habits, setHabits] = useState([]);
 	const [token, setToken] = useState(null);
-	const [isModalOpen, setIsModalOpen] = useState(false); // ✅ Controls modal visibility
+	const [isModalOpen, setIsModalOpen] = useState(false);
 
 	// ✅ Fetch JWT token
 	useEffect(() => {
@@ -61,7 +61,7 @@ export default function HabitTracker() {
 		} catch (error) {
 			console.error(error);
 		} finally {
-			setIsModalOpen(false); // ✅ Close modal after adding habit
+			setIsModalOpen(false);
 		}
 	};
 
@@ -86,16 +86,21 @@ export default function HabitTracker() {
 			{isModalOpen && (
 				<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
 					<div className="bg-white p-6 rounded-lg shadow-lg w-[400px]">
-						<h2 className="text-xl font-bold text-gray-800 mb-4">
-							Add New Habit
-						</h2>
+						{/* ✅ Header with "Add New Habit" & Close Button on the same row */}
+						<div className="flex justify-between items-center mb-4">
+							<h2 className="text-xl font-bold text-gray-800">
+								Add New Habit
+							</h2>
+							<button
+								onClick={() => setIsModalOpen(false)}
+								className="text-gray-500 hover:text-gray-700"
+							>
+								<X className="w-6 h-6" />
+							</button>
+						</div>
+
+						{/* ✅ Habit Form */}
 						<HabitForm onSubmit={handleAddHabit} />
-						<Button
-							onClick={() => setIsModalOpen(false)}
-							className="w-full mt-2 bg-red-500 hover:bg-red-600"
-						>
-							Close
-						</Button>
 					</div>
 				</div>
 			)}

@@ -40,7 +40,7 @@ export default function HabitForm({ onSubmit }) {
 			onSubmit={handleSubmit}
 			className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md"
 		>
-			<h2 className="text-xl font-bold text-white mb-4">Add New Habit</h2>
+			<h2 className="text-xl font-bold text-white mb-4">Habit Details</h2>
 
 			{/* ✅ Habit Name Input */}
 			<Input
@@ -53,7 +53,7 @@ export default function HabitForm({ onSubmit }) {
 
 			{/* ✅ Icon Selection Dropdown */}
 			<label className="text-white mb-2 block">Choose an Icon:</label>
-			<div className="flex flex-wrap justify-left gap-2 mb-4">
+			<div className="flex flex-wrap gap-2 mb-4">
 				{Object.entries(iconMap).map(([key, IconComponent]) => (
 					<button
 						type="button"
