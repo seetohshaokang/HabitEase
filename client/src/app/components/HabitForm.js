@@ -53,7 +53,7 @@ export default function HabitForm({ onSubmit }) {
 
 			{/* ✅ Icon Selection Dropdown */}
 			<label className="text-white mb-2 block">Choose an Icon:</label>
-			<div className="flex gap-2 mb-4">
+			<div className="flex flex-wrap justify-left gap-2 mb-4">
 				{Object.entries(iconMap).map(([key, IconComponent]) => (
 					<button
 						type="button"
