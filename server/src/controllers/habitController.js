@@ -147,3 +147,182 @@ export const deleteHabitLog = async (req, res) => {
 		res.status(500).json({ error: "Server error" });
 	}
 };
+
+// Get statistics for a specific habit
+export const getHabitStatistics = async (req, res) => {
+	try {
+		const {id} = req.params;
+		const userId = req.user.userId;
+
+		// Find the habit to ensure it exists and belongs to the user
+		const habit = await Habit.findOne({_id: id, userId});
+		if(!habit) {
+			return res.status(404).json({error: "Habit not found"});
+		}
+
+		// Get all logs for this habit
+		const habitLogs = await HabitLog.find({habitId: id, userId});
+
+		// If no logs, return basic stats
+		if(habitLogs.length === 0) {
+			return res.status(200).json({
+				habitId: id,
+				totalLogs: 0,
+				completionDays: [],
+				completionRate: 0,
+				firstLogDate: null,
+				lastLogDate: null,
+				currentMonthCompletions: 0,
+				previousMonthCompletions: 0
+			});
+		}
+
+		// Sort logs by timestamp
+		habitLogs.sort((a,b) => a.timeStamp - b.timeStamp);
+
+		// Get date-only strings from timestamps (YYYY-MM-DD)
+		const completionDays = habitLogs.map(log => 
+			new Date(log.timeStamp).toISOString().split('T')[0]
+		);
+
+		// Remove duplicates (in case of multiple logs on same day)
+		const uniqueCompletionDays = [...new Set(completionDays)];
+
+		// Calculate date ranges
+		const firstLogDate = new Date(habitLogs[0].timeStamp);
+		const lastLogDate = new Date(habitLogs[habitLogs.length -1].timeStamp);
+
+		// Calculate days since habit creation
+		const daysSinceCreation = Math.ceil(
+			(new Date() - firstLogDate) / (1000 * 60 * 60 * 24)
+		);
+
+		// Calculate completion rate
+		const completionRate = daysSinceCreation > 0 
+			? (uniqueCompletionDays.length / daysSinceCreation * 100).toFixed(1) : 100;
+
+		// Get current month and previous month completions
+		const currentDate = new Date();
+		const currentMonth = currentDate.getMonth();
+		const currentYear = currentDate.getFullYear();
+		const previousMonth = currentMonth === 0 ? 11 : currentMonth -1;
+		const previousMonthYear = currentMonth === 0 ? currentYear - 1: currentYear;
+
+		const currentMonthCompletions = habitLogs.filter(log => {\
+			const logDate = new Date(log.timeStamp);
+			return logDate.getMonth() === currentMonth && logDate.getFullYear() === currentYear;
+		}).length;
+
+		const previousMonthCompletions = habitLogs.filter(log => {
+			const logDate = new Date(log.timeStamp);
+			return logDate.getMonth() === previousMonth && logDate.getFullYear() === previousMonthYear;
+		}).length;
+
+		// Calculate month-over-month change
+		const monthlyChangePercentage = previousMonthCompletions > 0
+			? ((currentMonthCompletions - previousMonthCompletions) / previousMonthCompletions * 100).toFixed(1) : null;
+
+		// Return statistics
+		res.status(200).json({
+			habitId: id,
+			totalLogs: habitLogs.length,
+			uniqueCompletionDays: uniqueCompletionDays.length,
+			completionDays: uniqueCompletionDays,
+			completionRate: parseFloat(completionRate),
+			firstLogDate,
+			lastLogDate,
+			daysSinceCreation,
+			currentMonthCompletions,
+			previousMonthCompletions,
+			monthlyChangePercentage: monthlyChangePercentage ? parseFloat(monthlyChangePercentage) : null
+		});
+	} catch (error) {
+		console.error("Error fetching habit statistics:", error);
+		res.status(500).json({error: "Server error"});
+	} 
+};
+
+// Get statistics summary for all habits
+export const getAllHabitsStatistics = async (req, res) => {
+	try {
+		const userid = req.user.userid;
+
+		// Get all habits for this user
+		const habits = await Habit.find({userId});
+
+		if(habits.length === 0) {
+			return res.status(200).json({
+				totalHabits: 0,
+				habitStats: []
+			});
+		}
+
+		// Get all logs for this user
+		const allLogs = await HabitLog.find({userId});
+
+		// Process stats for each habit
+		const habitStats = await Promise.all(habits.map(async (habit) => {
+			const habitLogs = allLogs.filter(log => 
+				log.habitId.toString() === habit._id.toString()
+			);
+
+			if(habitLogs.length === 0) {
+				return {
+					habitId: habit._id,
+					name: habit.name,
+					logo: habit.logo,
+					totalLogs: 0,
+					completionRate: 0
+				}
+			}
+
+			// Get unique completion days
+			const completionDays = habitLogs.map(log => 
+				new Date(log.timeStamp).toISOString().split('T')[0]
+			);
+			const uniqueDays = [... new Set(completionDays)];
+
+			// Calculate completion rate (last 30 days)
+			const thirtyDaysAgo = new Date();
+			thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+			const recentLogs = habitLogs.filter(log => new Date(log.timeStamp >= thirtyDaysAgo));
+
+			const recentDays = recentLogs.map(log => new Date(log.timeStamp).toISOString().split('T')[0]);
+
+			const uniqueRecentDays = [... new Set(recentDays)];
+
+			const completionRate = (uniqueRecentDays.length / 30 * 100).toFixed(1);
+
+			return {
+				habitId: habit._id,
+				name: habit.name,
+				logo: habit.logo,
+				totalLogs: habitLogs.length,
+				completionDays: uniqueDays.length,
+				recentCompletionRate: parseFloat(completionRate),
+				lastCompleted: habitLogs.length > 0 
+					? new Date(Math.max(...habitLogs.map(log => new Date(log.timeStamp))))
+					: null
+			};
+		}));
+
+		// Calculate overall statistics
+		const totalLogs = allLogs.length;
+		const mostConsistentHabitId = habitStats.length > 0
+			? habitStats.reduce((prev,current) => 
+			(prev.recentComplettionRate > current.recentCompletionRate) ? prev : current
+			).habitId
+			: null;
+		
+		res.status(200).json({
+			totalHabits: habits.length,
+			totalLogs,
+			mostConsistentHabitId,
+			habitStats
+		});
+	} catch (error) {
+		console.error("Error fetching all habits statistics:", error);
+		res.status(500).json({error: "Server error"});
+	}
+}

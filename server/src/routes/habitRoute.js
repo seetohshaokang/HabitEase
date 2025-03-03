@@ -3,6 +3,7 @@ import {
 	addHabit,
 	deleteHabit,
 	deleteHabitLog,
+	getAllHabitsStatistics,
 	getHabitLogs,
 	getHabits,
 	logHabit,
@@ -33,5 +34,11 @@ router.delete("/log/:logId", verifyToken, deleteHabitLog);
 
 // ✅ Delete a habit by ID
 router.delete("/:id", verifyToken, deleteHabit);
+
+// Get statistics for a specific habit
+router.get("/:id/statistics", verifyToken, getHabitStatistics);
+
+// Get statistics summary for all habits
+router.get("/statistics/summary", verifyToken, getAllHabitsStatistics);
 
 export default router;
