@@ -68,7 +68,7 @@ export const deleteHabit = async (req, res) => {
 export const logHabit = async (req, res) => {
 	try {
 		const { id } = req.params;
-		const userid = req.user.userId;
+		const userId = req.user.userId;
 		const { value } = req.body;
 		const habit = await Habit.findById(id);
 

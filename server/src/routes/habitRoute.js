@@ -2,6 +2,7 @@ import express from "express";
 import {
 	addHabit,
 	deleteHabit,
+	deleteHabitLog,
 	getHabitLogs,
 	getHabits,
 	logHabit,
@@ -22,10 +23,13 @@ router.post("/", verifyToken, addHabit);
 router.put("/:id/complete", verifyToken, logHabit);
 
 // ✅ Get all habit logs for a specific habit
-router.get(":/id/logs", verifyToken, getHabitLogs);
+router.get("/:id/logs", verifyToken, getHabitLogs);
 
 // ✅ Update a habit log entry
 router.put("/log/:logId", verifyToken, updateHabitLog);
+
+// Delete a habit log entry
+router.delete("/log/:logId", verifyToken, deleteHabitLog);
 
 // ✅ Delete a habit by ID
 router.delete("/:id", verifyToken, deleteHabit);
