@@ -6,7 +6,7 @@ export default function Habitcard({ habit, onComplete }) {
 	const [isLoggin, setIsLogging] = useState(false);
 
 	// Check if habit was completed today
-	const iscompletedToday = () => {
+	const isCompletedToday = () => {
 		if (!habit.logs || habit.logs.length === 0) return false;
 
 		const today = new Date().toISOString().split("T")[0];
@@ -19,7 +19,7 @@ export default function Habitcard({ habit, onComplete }) {
 	const completed = isCompletedToday();
 
 	const handleLogHabit = async () => {
-		if (isLoggin) return;
+		if (isLogging) return;
 
 		try {
 			setIsLogging(true);
