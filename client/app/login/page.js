@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useAuth } from "../../../contexts/AuthContext";
+import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
 	const { token, login, loading } = useAuth();

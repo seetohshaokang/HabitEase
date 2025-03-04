@@ -2,14 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useAuth } from "../../../contexts/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import {
 	deleteHabit,
 	getHabit,
 	getHabitLogs,
 	getHabitStatistics,
 	logHabit,
-} from "../../../lib/api";
+} from "../../lib/api";
 
 export default function HabitDetail({ params }) {
 	const { id } = params;

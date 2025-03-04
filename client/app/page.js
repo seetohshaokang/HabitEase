@@ -17,8 +17,21 @@ export default function Home() {
 		}
 	}, [token, loading, router]);
 
-	const handleGetStarted = () => {
-		router.push("/login");
+	const handleGetStarted = async () => {
+		try {
+			// Attempt to login anonymously
+			const success = await login();
+			if (success) {
+				router.push("/dashboard");
+			} else {
+				// If login fails, still go to login page
+				router.push("/login");
+				setIsRedirecting(false);
+			}
+		} catch (error) {
+			console.error("Error during login:", error);
+			setIsRedirecting(false);
+		}
 	};
 
 	if (loading || isRedirecting) {

@@ -11,7 +11,7 @@ export const getToken = async () => {
 export const fetchHabits = async (token) => {
 	const response = await fetch(`${API_URL}/habits`, {
 		headers: {
-			Authorisation: `Bearer ${token}`,
+			Authorization: `Bearer ${token}`,
 		},
 	});
 	return response.json();
@@ -83,7 +83,7 @@ export const logHabit = async (token, habitId, value = null) => {
 	const response = await fetch(`${API_URL}/habits/${habitId}/complete`, {
 		method: "PUT",
 		headers: {
-			Authorisation: `Bearer ${token}`,
+			Authorization: `Bearer ${token}`,
 			"Content-Type": "application/json",
 		},
 		body: JSON.stringify({ value }),

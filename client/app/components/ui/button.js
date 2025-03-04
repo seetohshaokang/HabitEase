@@ -6,7 +6,7 @@ export default function Button({
 	...props
 }) {
 	const baseStyles =
-		"font-medium rounded focus:outline-non transition-colors";
+		"font-medium rounded focus:outline-none transition-colors";
 
 	const variantStyles = {
 		primary: "bg-blue-500 hover:bg-blue-600 text-white",
