@@ -174,7 +174,7 @@ export default function HabitDetail({ params }) {
 				</div>
 			)}
 
-			{/* Today's Status and Action */}
+			{/* Today&apos;s Status and Action */}
 			<div className="bg-white rounded-lg shadow p-4 mb-6">
 				<h2 className="text-xl font-semibold mb-3">Today</h2>
 
@@ -191,7 +191,7 @@ export default function HabitDetail({ params }) {
 				) : (
 					<div className="flex items-center">
 						<p className="text-gray-700 flex-1">
-							You haven't completed this habit today.
+							You haven&apos;t completed this habit today.
 						</p>
 						<button
 							onClick={handleLogHabit}

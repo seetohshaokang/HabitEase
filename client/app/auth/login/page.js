@@ -59,8 +59,8 @@ export default function Login() {
 
 			<div className="bg-blue-50 p-4 rounded-md mb-6">
 				<p className="text-sm text-blue-700">
-					No account needed! We'll create an anonymous profile for you
-					to start tracking habits right away.
+					No Account needed! We&apos;ll create an anonymous profile
+					for you to start tracking habits right away.
 				</p>
 			</div>
 

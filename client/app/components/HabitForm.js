@@ -137,7 +137,8 @@ export default function HabitForm({ habit = null }) {
 					className="w-full p-2 border border-gray-300 rounded"
 				/>
 				<p className="text-sm text-gray-500 mt-1">
-					For measurable habits like "20 minutes" or "8 glasses"
+					For measurable habits like &quot;20 minutes&quot; or &quot;8
+					glasses&quot;
 				</p>
 			</div>
 
