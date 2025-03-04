@@ -5,6 +5,7 @@ import {
 	deleteHabitLog,
 	getAllHabitsStatistics,
 	getHabitLogs,
+	getHabitStatistics,
 	getHabits,
 	logHabit,
 	updateHabitLog,
