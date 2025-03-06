@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import HabitCard from "../components/HabitCard";
 import Button from "../components/ui/button";
 import { useAuth } from "../context/AuthContext";
 import { fetchHabits } from "../lib/api";
@@ -24,6 +25,15 @@ export default function Dashboard() {
 		try {
 			setIsLoading(true);
 			const data = await fetchHabits(token);
+
+			// Add defensive check - make sure we're setting an array
+			if (Array.isArray(data)) {
+				setHabits(data);
+			} else {
+				console.error("API did not return an array:", data);
+				setHabits([]); // Set to empty array as fallaback
+			}
+
 			setHabits(data);
 		} catch (error) {
 			console.error("Error loading habits:", error);
