@@ -257,6 +257,10 @@ export default function HabitDetail({ params }) {
 					</div>
 				)}
 			</div>
+			{/* Habit Visualizations */}
+			<div className="mb-6">
+				<HabitVisualizations habit={habit} logs={logs} />
+			</div>
 		</div>
 	);
 }

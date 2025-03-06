@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { logHabit } from "../lib/api";
+import MiniHeatMap from "./MiniHeatmap";
 
 export default function Habitcard({ habit, onComplete }) {
 	const { token } = useAuth();
@@ -123,6 +124,9 @@ export default function Habitcard({ habit, onComplete }) {
 						{habit.unit && "(Tracks in " + habit.unit + ")"}
 					</span>
 				)}
+
+				{/* Add Mini Heatmap */}
+				<MiniHeatMap logs={habit.logs || []} />
 			</div>
 		</div>
 	);
