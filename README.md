@@ -2,7 +2,7 @@
 
 A full-stack habit tracking application that helps users build better habits through consistent tracking and meaningful visualizations.
 
-![HabitEase Screenshot](screenshot.png)
+![HabitEase Screenshot](client/public/LandingPage.png)
 
 ## Overview
 
