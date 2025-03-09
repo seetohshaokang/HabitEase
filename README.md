@@ -140,6 +140,8 @@ npm run dev
 2. Enter a habit name, select an icon, and optionally add a unit of measurement
 3. Click "Create Habit"
 
+![HabitEase Screenshot](client/public/NewHabit.png)
+
 ### Logging a Habit
 
 1. From the dashboard, click "+" on the habit card
