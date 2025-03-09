@@ -31,7 +31,7 @@ export default function Habitcard({ habit, onComplete }) {
 
 		// If this habit has a unit define and we're not showing the input yet
 		if (habit.unit && !showUnitInput && !completed) {
-			setShowUniInput(true);
+			setShowUnitInput(true);
 			return;
 		}
 

@@ -7,34 +7,37 @@ import { useAuth } from "./context/AuthContext";
 export default function Home() {
 	const { token, login, loading } = useAuth();
 	const router = useRouter();
-	const [isRedirecting, setIsRedirecting] = useState(false);
+	const [isLoggingIn, setIsLoggingIn] = useState(false);
+	const [error, setError] = useState(null);
 
 	useEffect(() => {
 		// If user is already logged in, redirect to dashboard
 		if (!loading && token) {
-			setIsRedirecting(true);
 			router.push("/dashboard");
 		}
 	}, [token, loading, router]);
 
 	const handleGetStarted = async () => {
 		try {
+			setIsLoggingIn(true);
+			setError(null);
+
 			// Attempt to login anonymously
 			const success = await login();
 			if (success) {
 				router.push("/dashboard");
 			} else {
-				// If login fails, still go to login page
-				router.push("/login");
-				setIsRedirecting(false);
+				setError("Failed to create a session. Please try again.");
 			}
 		} catch (error) {
 			console.error("Error during login:", error);
-			setIsRedirecting(false);
+			setError("Something went wrong. Please try again.");
+		} finally {
+			setIsLoggingIn(false);
 		}
 	};
 
-	if (loading || isRedirecting) {
+	if (loading) {
 		return (
 			<div className="flex justify-center items-center min-h-screen">
 				<div className="text-xl">Loading...</div>
@@ -45,7 +48,7 @@ export default function Home() {
 	return (
 		<div className="min-h-screen flex flex-col">
 			{/* Hero Section */}
-			<div className="flex-1 flex flex-col items-center justify-center px-4 pt-16 pb-16 text-center">
+			<div className="flex-1 flex flex-col items-center justify-center px-4 py-16 text-center">
 				<h1 className="text-4xl md:text-5xl font-bold mb-6">
 					Welcome to <span className="text-blue-500">HabitEase</span>
 				</h1>
@@ -55,12 +58,26 @@ export default function Home() {
 					goals with our simple habit tracking app.
 				</p>
 
+				{error && (
+					<div className="bg-red-50 text-red-500 p-3 rounded-md mb-4 max-w-md">
+						{error}
+					</div>
+				)}
+
 				<button
 					onClick={handleGetStarted}
-					className="bg-blue-500 hover:bg-blue-600 text-white font-medium pt-3 pb-3 px-8 rounded-md text-lg transition-colors"
+					disabled={isLoggingIn}
+					className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-8 rounded-md text-lg transition-colors disabled:bg-blue-300"
 				>
-					Get Started
+					{isLoggingIn ? "Creating your profile..." : "Get Started"}
 				</button>
+
+				<div className="bg-blue-50 p-4 rounded-md mt-4 max-w-md">
+					<p className="text-sm text-blue-700">
+						No account needed! We'll create an anonymous profile for
+						you to start tracking habits right away.
+					</p>
+				</div>
 			</div>
 
 			{/* Features Section */}
