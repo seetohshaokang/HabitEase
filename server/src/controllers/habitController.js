@@ -87,11 +87,32 @@ export const logHabit = async (req, res) => {
 	}
 };
 
+export const getHabitById = async (req, res) => {
+	try {
+		const { id } = req.params;
+		const userId = req.user.userId;
+
+		const habit = await Habit.findOne({ _id: id, userId });
+
+		if (!habit) {
+			return res.status(404).json({ error: "Habit not found" });
+		}
+
+		res.status(200).json(habit);
+	} catch (error) {
+		console.error("Error fetching habit by ID:", error);
+		res.status(500).json({ error: "Server error" });
+	}
+};
+
 // ✅ Get all habit logs for a specific habit
 export const getHabitLogs = async (req, res) => {
 	try {
 		const { id } = req.params;
 		const userId = req.user.userId;
+
+		// Check if id is a Promise and resolve it
+		const habitId = id instanceof Promise ? await id : id;
 
 		const habitLogs = await HabitLog.find({ habitId: id, userId });
 
@@ -265,7 +286,7 @@ export const getHabitStatistics = async (req, res) => {
 // Get statistics summary for all habits
 export const getAllHabitsStatistics = async (req, res) => {
 	try {
-		const userid = req.user.userid;
+		const userId = req.user.userid;
 
 		// Get all habits for this user
 		const habits = await Habit.find({ userId });
@@ -348,8 +369,7 @@ export const getAllHabitsStatistics = async (req, res) => {
 		const mostConsistentHabitId =
 			habitStats.length > 0
 				? habitStats.reduce((prev, current) =>
-						prev.recentComplettionRate >
-						current.recentCompletionRate
+						prev.recentCompletionRate > current.recentCompletionRate
 							? prev
 							: current
 				  ).habitId

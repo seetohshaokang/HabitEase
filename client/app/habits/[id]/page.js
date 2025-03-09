@@ -1,5 +1,6 @@
 "use client";
 
+import HabitVisualizations from "@/app/components/HabitVisualizations";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
@@ -12,7 +13,7 @@ import {
 } from "../../lib/api";
 
 export default function HabitDetail({ params }) {
-	const { id } = params;
+	const id = params.id; // Explicitly match structure that Next.js provides
 	const { token, loading } = useAuth();
 	const router = useRouter();
 
@@ -33,15 +34,30 @@ export default function HabitDetail({ params }) {
 	const loadHabitData = async () => {
 		try {
 			setIsLoading(true);
-			const [habitData, logsData, statsData] = await Promise.all([
-				getHabit(token, id),
-				getHabitLogs(token, id),
-				getHabitStatistics(token, id),
-			]);
+			console.log("Loading habit data for ID:", id);
+			console.log(
+				"Using token:",
+				token ? "Valid token exists" : "No token"
+			);
 
-			setHabit(habitData);
-			setLogs(logsData);
-			setStats(statsData);
+			// Fetch habit data first to debug more easily
+			try {
+				const habitData = await getHabit(token, id);
+				console.log("Successfully fetched habit data:", habitData);
+				setHabit(habitData);
+
+				// Now fetch the remaining data
+				const [logsData, statsData] = await Promise.all([
+					getHabitLogs(token, id),
+					getHabitStatistics(token, id),
+				]);
+
+				setLogs(logsData);
+				setStats(statsData);
+			} catch (error) {
+				console.error("Specific error fetching habit:", error.message);
+				throw error; // Re-throw to be caught by outer catch
+			}
 		} catch (error) {
 			console.error("Error loading habit data:", error);
 		} finally {

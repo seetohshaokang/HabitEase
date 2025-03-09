@@ -8,7 +8,7 @@ import { useAuth } from "../context/AuthContext";
 import { fetchHabits } from "../lib/api";
 
 export default function Dashboard() {
-	const { token, loading } = useAuth();
+	const { token, loading, logout } = useAuth();
 	const [habits, setHabits] = useState([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const router = useRouter();
@@ -33,13 +33,16 @@ export default function Dashboard() {
 				console.error("API did not return an array:", data);
 				setHabits([]); // Set to empty array as fallaback
 			}
-
-			setHabits(data);
 		} catch (error) {
 			console.error("Error loading habits:", error);
 		} finally {
 			setIsLoading(false);
 		}
+	};
+
+	const handleLogout = () => {
+		logout();
+		router.push("/login");
 	};
 
 	if (loading || isLoading) {
@@ -50,9 +53,18 @@ export default function Dashboard() {
 		<div className="container mx-auto p-4">
 			<div className="flex justify-between items-center mb-6">
 				<h1 className="text-2xl font-bold">My Habits</h1>
-				<Button onClick={() => router.push("/habits/new")}>
-					Add Habit
-				</Button>
+				<div className="flex gap-2">
+					<Button onClick={() => router.push("/habits/new")}>
+						Add Habit
+					</Button>
+					<Button
+						variant="outline"
+						onClick={handleLogout}
+						className="ml-2"
+					>
+						Logout
+					</Button>
+				</div>
 			</div>
 
 			{habits.length === 0 ? (

@@ -10,8 +10,8 @@ export default function Habitcard({ habit, onComplete }) {
 	const { token } = useAuth();
 	const router = useRouter();
 	const [isLogging, setIsLogging] = useState(false);
-	const [showUnitInput, setShowUniInput] = useState(false);
-	cosnt[(unitValue, setUnitValue)] = useState("");
+	const [showUnitInput, setShowUnitInput] = useState(false);
+	const [unitValue, setUnitValue] = useState("");
 
 	// Check if habit was completed today
 	const isCompletedToday = () => {
@@ -41,7 +41,7 @@ export default function Habitcard({ habit, onComplete }) {
 			const value = unitValue.trim() !== "" ? unitValue : null;
 			await logHabit(token, habit._id, value);
 			setShowUnitInput(false);
-			setUnitvalue("");
+			setUnitValue("");
 			onComplete(); // Refresh habits after logging
 		} catch (error) {
 			console.error("Error logging habit:", error);
@@ -51,7 +51,20 @@ export default function Habitcard({ habit, onComplete }) {
 	};
 
 	const handleCardClick = () => {
+		// Make sure the ID is a string before passing to router
+		const habitId = habit._id ? habit._id.toString() : habit._id;
+		console.log("Navigating to habit:", habitId);
 		router.push(`/habits/${habit._id}`);
+	};
+
+	const handleUnitInputChange = (e) => {
+		setUnitValue(e.target.value);
+	};
+
+	const handleUnitInputKeyDown = (e) => {
+		if (e.key === "Enter") {
+			handleLogHabit();
+		}
 	};
 
 	return (

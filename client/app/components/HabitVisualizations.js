@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function HabitVisualization({ habit, logs }) {
 	const [weekdayData, setWeekdayData] = useState([]);
 	const [monthlyData, setMonthlyData] = useState([]);
-	const [heatmapData, setheatmapDat] = useState([]);
+	const [heatmapData, setHeatmapData] = useState([]);
 
 	useEffect(() => {
 		if (!logs || logs.length === 0) return;
@@ -51,7 +51,7 @@ export default function HabitVisualization({ habit, logs }) {
 			// Count total occurrences of each weekday in date ranges
 			let currentDate = new Date(minDate);
 			while (currentDate <= maxDate) {
-				const dayofWeek = currentDate.getDay();
+				const dayOfWeek = currentDate.getDay();
 				data[dayOfWeek].total++;
 				currentDate.setDate(currentDate.getDate() + 1);
 			}
@@ -67,11 +67,11 @@ export default function HabitVisualization({ habit, logs }) {
 		setWeekdayData(data);
 	};
 
-	const processMonthylData = () => {
+	const processMonthlyData = () => {
 		if (logs.length === 0) return;
 
 		// Get the past 6 months
-		const month = [];
+		const months = [];
 		const today = new Date();
 		for (let i = 5; i >= 0; i--) {
 			const month = new Date(
@@ -140,7 +140,7 @@ export default function HabitVisualization({ habit, logs }) {
 			}
 		});
 
-		setheatmapData(data);
+		setHeatmapData(data);
 	};
 
 	return (

@@ -76,7 +76,7 @@ export default function MiniHeatMap({ logs }) {
 					key={index}
 					className={`w-3 h-3 rounded-sm ${getCellColor(day.value)}`}
 					title={
-						data.date +
+						day.date +
 						(day.value ? "- Completed" : " - Not completed")
 					}
 				></div>

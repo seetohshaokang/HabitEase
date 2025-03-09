@@ -4,6 +4,7 @@ import {
 	deleteHabit,
 	deleteHabitLog,
 	getAllHabitsStatistics,
+	getHabitById,
 	getHabitLogs,
 	getHabitStatistics,
 	getHabits,
@@ -23,6 +24,9 @@ router.post("/", verifyToken, addHabit);
 
 // ✅ Log habit completion
 router.put("/:id/complete", verifyToken, logHabit);
+
+// Get details of a single habit
+router.get("/:id", verifyToken, getHabitById);
 
 // ✅ Get all habit logs for a specific habit
 router.get("/:id/logs", verifyToken, getHabitLogs);

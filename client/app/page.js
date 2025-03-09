@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "./context/AuthContext";
 
 export default function Home() {
-	const { token, loading } = useAuth();
+	const { token, login, loading } = useAuth();
 	const router = useRouter();
 	const [isRedirecting, setIsRedirecting] = useState(false);
 

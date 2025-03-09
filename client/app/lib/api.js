@@ -18,16 +18,33 @@ export const fetchHabits = async (token) => {
 };
 
 export const getHabit = async (token, habitId) => {
-	const response = await fetch(`${API_URL}/habits/${habitId}`, {
-		headers: {
-			Authorization: `Bearer ${token}`,
-		},
-	});
-
-	if (!response.ok) {
-		throw new Error("Failed to fetech habit");
+	if (!habitId) {
+		throw new Error("Habit ID is required");
 	}
-	return response.json();
+
+	try {
+		console.log(`Fetching habit with ID: ${habitId}`);
+		const response = await fetch(`${API_URL}/habits/${habitId}`, {
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+		});
+
+		if (!response.ok) {
+			// Get more detailed error information
+			const errorText = await response.text();
+			console.error(`API returned ${response.status}: ${errorText}`);
+			throw new Error(
+				`Failed to fetch habit: ${response.status} ${response.statusText}`
+			);
+		}
+
+		const data = await response.json();
+		return data;
+	} catch (error) {
+		console.error("Error in getHabit:", error);
+		throw error;
+	}
 };
 
 export const createHabit = async (token, habitData) => {
