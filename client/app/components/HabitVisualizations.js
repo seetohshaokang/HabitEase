@@ -8,7 +8,23 @@ export default function HabitVisualization({ habit, logs }) {
 	const [heatmapData, setHeatmapData] = useState([]);
 
 	useEffect(() => {
-		if (!logs || logs.length === 0) return;
+		console.log("HabitVisualization received props:", { habit, logs });
+		console.log("Logs type:", Array.isArray(logs) ? "Array" : typeof logs);
+		console.log("Logs length:", logs?.length || 0);
+
+		if (!logs || logs.length === 0) {
+			console.log("No logs to process, returning early");
+			return;
+		}
+
+		console.log(
+			"First few log timestamps:",
+			logs.slice(0, 3).map((log) => ({
+				timeStamp: log.timeStamp,
+				parsedDate: new Date(log.timeStamp).toString(),
+				isValid: !isNaN(new Date(log.timeStamp).getTime()),
+			}))
+		);
 
 		processWeekdayData();
 		processMonthlyData();
@@ -16,6 +32,7 @@ export default function HabitVisualization({ habit, logs }) {
 	}, [logs]);
 
 	const processWeekdayData = () => {
+		console.log("Starting processWeekdayData");
 		// Initialise counters for each day of week
 		const daysOfWeek = [
 			"Sunday",
@@ -37,6 +54,13 @@ export default function HabitVisualization({ habit, logs }) {
 		// Count completion for each day of week
 		logs.forEach((log) => {
 			const date = new Date(log.timeStamp);
+			if (isNaN(date.getTime())) {
+				console.error(
+					"Invalid date in processWeekdayData:",
+					log.timeStamp
+				);
+				return;
+			}
 			const dayOfWeek = date.getDay();
 			data[dayOfWeek].count++;
 		});
@@ -45,8 +69,20 @@ export default function HabitVisualization({ habit, logs }) {
 		if (logs.length > 0) {
 			// Get date range
 			const dates = logs.map((log) => new Date(log.timeStamp));
-			const minDate = new Date(Math.min(...dates));
+			const validDates = dates.filter((date) => !isNaN(date.getTime()));
+
+			if (validDates.length === 0) {
+				console.error("No valid dates found in logs");
+				return;
+			}
+
+			const minDate = new Date(Math.min(...validDates));
 			const maxDate = new Date();
+
+			console.log("Date range for weekday data:", {
+				minDate: minDate.toISOString(),
+				maxDate: maxDate.toISOString(),
+			});
 
 			// Count total occurrences of each weekday in date ranges
 			let currentDate = new Date(minDate);
@@ -64,15 +100,22 @@ export default function HabitVisualization({ habit, logs }) {
 						: 0;
 			});
 		}
+
+		console.log("Weekday data processed:", data);
 		setWeekdayData(data);
 	};
 
 	const processMonthlyData = () => {
-		if (logs.length === 0) return;
+		console.log("Starting processMonthlyData");
+		if (logs.length === 0) {
+			console.log("No logs to process for monthly data");
+			return;
+		}
 
 		// Get the past 6 months
 		const months = [];
 		const today = new Date();
+
 		for (let i = 5; i >= 0; i--) {
 			const month = new Date(
 				today.getFullYear(),
@@ -87,24 +130,73 @@ export default function HabitVisualization({ habit, logs }) {
 			});
 		}
 
-		// Count completions for each month
-		logs.forEach((log) => {
-			const date = new Date(log.timeStamp);
-			const monthIndex = months.findIndex(
-				(m) =>
-					m.numericMonth === date.getMonth() &&
-					m.year === date.getFullYear()
-			);
+		console.log("Month buckets created:", months);
 
-			if (monthIndex >= 0) {
-				months[monthIndex].count++;
+		// Count completions for each month
+		let matchCount = 0;
+		let processedCount = 0;
+
+		logs.forEach((log) => {
+			processedCount++;
+			try {
+				const date = new Date(log.timeStamp);
+				if (isNaN(date.getTime())) {
+					console.error(
+						"Invalid date in processMonthlyData:",
+						log.timeStamp
+					);
+					return;
+				}
+
+				console.log(`Log ${processedCount}:`, {
+					timeStamp: log.timeStamp,
+					parsedDate: date.toString(),
+					month: date.getMonth(),
+					year: date.getFullYear(),
+				});
+
+				const monthIndex = months.findIndex(
+					(m) =>
+						m.numericMonth === date.getMonth() &&
+						m.year === date.getFullYear()
+				);
+
+				if (monthIndex >= 0) {
+					months[monthIndex].count++;
+					matchCount++;
+					console.log(
+						`  → Matched month at index ${monthIndex}: ${months[monthIndex].month} ${months[monthIndex].year}`
+					);
+				} else {
+					console.log(
+						`  → No matching month found for ${date.getMonth()}/${date.getFullYear()}`
+					);
+				}
+			} catch (error) {
+				console.error(
+					"Error processing log for monthly data:",
+					error,
+					log
+				);
 			}
 		});
+
+		console.log(
+			`Processed ${processedCount} logs, matched ${matchCount} to months`
+		);
+		console.log("Final monthly data:", months);
+
+		// Check if all counts are zero
+		const allZero = months.every((month) => month.count === 0);
+		if (allZero) {
+			console.warn("WARNING: All monthly counts are zero!");
+		}
 
 		setMonthlyData(months);
 	};
 
 	const processHeatmapData = () => {
+		console.log("Starting processHeatmapData");
 		// Create a 6-month heatmap grid (same as github style)
 		const startDate = new Date();
 		startDate.setDate(1); // First day of current month
@@ -127,21 +219,41 @@ export default function HabitVisualization({ habit, logs }) {
 		// Map log dates to the date objects
 		const logMap = {};
 		logs.forEach((log) => {
-			const dateStr = new Date(log.timeStamp).toISOString().split("T")[0];
+			const dateObj = new Date(log.timeStamp);
+			if (isNaN(dateObj.getTime())) {
+				console.error(
+					"Invalid date in processHeatmapData:",
+					log.timeStamp
+				);
+				return;
+			}
+
+			const dateStr = dateObj.toISOString().split("T")[0];
 			// If habit has units, store the value, otherwise just mark as completed
 			logMap[dateStr] =
 				habit.unit && log.value ? parseFloat(log.value) : true;
 		});
 
 		// Update the value for each date
+		let matchCount = 0;
 		data.forEach((day) => {
 			if (logMap[day.dateStr] !== undefined) {
 				day.value = logMap[day.dateStr];
+				matchCount++;
 			}
 		});
 
+		console.log(
+			`Heatmap: matched ${matchCount} logs to dates out of ${data.length} days`
+		);
 		setHeatmapData(data);
 	};
+
+	console.log("Rendering with state:", {
+		weekdayDataLength: weekdayData.length,
+		monthlyDataLength: monthlyData.length,
+		monthlyData: monthlyData,
+	});
 
 	return (
 		<div className="space-y-8">
@@ -201,31 +313,49 @@ export default function HabitVisualization({ habit, logs }) {
 				</div>
 			</div>
 
+			{/* Monthly Trend */}
 			<div className="bg-white p-4 rounded-lg shadow">
 				<h3 className="text-lg font-medium mb-4">Monthly Trend</h3>
-				<div className="h-40 flex items-end justify-between">
-					{monthlyData.map((month) => (
-						<div
-							key={month.month}
-							className="flex flex-col items-center"
-						>
-							<div
-								className="w-8 bg-blue-500 rounded-t"
-								style={{
-									height: `${
-										(month.count /
-											Math.max(
-												...monthlyData.map(
-													(m) => m.count || 1
-												)
-											)) *
-										100
-									}%`,
-								}}
-							></div>
-							<div className="mt-2 text-xs">{month.month}</div>
+
+				<div className="mt-4">
+					{monthlyData.length > 0 ? (
+						<div className="space-y-3">
+							{monthlyData.map((month) => {
+								const maxCount =
+									Math.max(
+										...monthlyData.map((m) => m.count || 0)
+									) || 1;
+								const widthPercent =
+									(month.count / maxCount) * 100;
+
+								return (
+									<div
+										key={`${month.month}-${month.year}`}
+										className="flex items-center"
+									>
+										<div className="w-12 text-xs text-right pr-2">
+											{month.month}
+										</div>
+										<div className="flex-1 h-6 bg-gray-100 rounded-full overflow-hidden">
+											<div
+												className="h-full bg-blue-500 rounded-full transition-all duration-500"
+												style={{
+													width: `${widthPercent}%`,
+												}}
+											/>
+										</div>
+										<div className="w-12 text-xs text-gray-500 pl-2">
+											{month.count}
+										</div>
+									</div>
+								);
+							})}
 						</div>
-					))}
+					) : (
+						<p className="text-gray-500">
+							No monthly data available
+						</p>
+					)}
 				</div>
 			</div>
 
