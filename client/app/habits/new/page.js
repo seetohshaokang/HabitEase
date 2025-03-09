@@ -12,7 +12,7 @@ export default function NewHabitPage() {
 	useEffect(() => {
 		// Redirect if not logged in
 		if (!loading && !token) {
-			router.push("/login");
+			router.push("/");
 		}
 	}, [token, loading, router]);
 

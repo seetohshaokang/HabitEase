@@ -27,7 +27,7 @@ export default function HabitDetail({ params }) {
 		if (!loading && token) {
 			loadHabitData();
 		} else if (!loading && !token) {
-			router.push("/login");
+			router.push("/");
 		}
 	}, [id, token, loading]);
 
