@@ -15,6 +15,7 @@ import {
 } from "../../lib/api";
 
 import EditLogModal from "../../components/EditLogModal";
+import LogHabitModal from "../../components/LogHabitModal";
 
 export default function HabitDetail({ params }) {
 	const id = params.id; // Explicitly match structure that Next.js provides
@@ -27,6 +28,8 @@ export default function HabitDetail({ params }) {
 	const [isLoading, setIsLoading] = useState(true);
 	const [isDeleting, setIsDeleting] = useState(false);
 	const [editingLog, setEditingLog] = useState(null);
+
+	const [showLogModal, setShowLogModal] = useState(false); // For tracking log modal
 
 	useEffect(() => {
 		if (!loading && token) {
@@ -70,7 +73,7 @@ export default function HabitDetail({ params }) {
 		}
 	};
 
-	const handleLogHabit = async () => {
+	const handleLogHabit = async (value = null) => {
 		try {
 			await logHabit(token, id);
 			loadHabitData(); // Refresh data
@@ -215,7 +218,8 @@ export default function HabitDetail({ params }) {
 					)}
 				</div>
 			)}
-			{/* Today&apos;s Status and Action */}
+
+			{/* Today's Status and Action */}
 			<div className="bg-white rounded-lg shadow p-4 mb-6">
 				<h2 className="text-xl font-semibold mb-3">Today</h2>
 
@@ -235,7 +239,7 @@ export default function HabitDetail({ params }) {
 							You haven&apos;t completed this habit today.
 						</p>
 						<button
-							onClick={handleLogHabit}
+							onClick={() => setShowLogModal(true)}
 							className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
 						>
 							Complete Now
@@ -243,6 +247,18 @@ export default function HabitDetail({ params }) {
 					</div>
 				)}
 			</div>
+
+			{/* Log Habit Modal */}
+			{showLogModal && (
+				<LogHabitModal
+					habit={habit}
+					onComplete={(habitId, value) => {
+						handleLogHabit(value);
+						setShowLogModal(false);
+					}}
+					onClose={() => setShowLogModal(false)}
+				/>
+			)}
 
 			<div className="bg-white rounded-lg shadow p-4 mb-8">
 				<h2 className="text-xl font-semibold mb-3">Recent Activity</h2>

@@ -37,7 +37,7 @@ export default function LogHabitModal({ habit, onComplete, onClose }) {
 								className="block text-gray-700 mb-2"
 								htmlFor="habitValue"
 							>
-								{habit.unit}
+								Measurement: {habit.unit}
 							</label>
 							<input
 								id="habitValue"
