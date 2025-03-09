@@ -11,7 +11,7 @@ import {
 	logHabit,
 	updateHabitLog,
 } from "../controllers/habitController.js"; // ✅ Fixed typo
-
+import { generateSampleData } from "../controllers/sampleDataController.js";
 import { verifyToken } from "../middleware/auth.js"; // ✅ Ensures only authenticated users access routes
 
 const router = express.Router();
@@ -24,6 +24,9 @@ router.post("/", verifyToken, addHabit);
 
 // ✅ Log habit completion
 router.put("/:id/complete", verifyToken, logHabit);
+
+// Load sample data
+router.post("/sample-data", verifyToken, generateSampleData);
 
 // Get details of a single habit
 router.get("/:id", verifyToken, getHabitById);

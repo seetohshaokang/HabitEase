@@ -147,3 +147,19 @@ export const getAllHabitsStatistics = async (token) => {
 	}
 	return response.json();
 };
+
+export const generateSampleData = async (token) => {
+	const response = await fetch(`${API_URL}/habits/sample-data`, {
+		method: "POST",
+		headers: {
+			Authorization: `Bearer ${token}`,
+			"Content-Type": "application/json",
+		},
+	});
+
+	if (!response.ok) {
+		throw new Error("Failed to generate sample data");
+	}
+
+	return response.json();
+};

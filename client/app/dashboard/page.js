@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import HabitCard from "../components/HabitCard";
 import Button from "../components/ui/button";
 import { useAuth } from "../context/AuthContext";
-import { fetchHabits } from "../lib/api";
+import { fetchHabits, generateSampleData } from "../lib/api";
 
 export default function Dashboard() {
 	const { token, loading, logout } = useAuth();
@@ -70,12 +70,33 @@ export default function Dashboard() {
 			{habits.length === 0 ? (
 				<div className="text-center py-10">
 					<p>You don't have any habits yet,</p>
-					<Button
-						className="mt-4"
-						onClick={() => router.push("/habits/new")}
-					>
-						Create your first habit
-					</Button>
+					<div className="flex flex-col items-center gap-4">
+						<Button
+							className="mt-4"
+							onClick={() => router.push("/habits/new")}
+						>
+							Create your first habit
+						</Button>
+						<Button
+							variant="secondary"
+							onClick={async () => {
+								try {
+									setIsLoading(true);
+									await generateSampleData(token);
+									await loadHabits(); // Reload habits after generating sample data
+								} catch (error) {
+									console.error(
+										"Error generating sample data:",
+										error
+									);
+								} finally {
+									setIsLoading(false);
+								}
+							}}
+						>
+							Load Sample Habits
+						</Button>
+					</div>
 				</div>
 			) : (
 				<div className="grid grid-col-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
