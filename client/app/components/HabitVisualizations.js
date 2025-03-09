@@ -259,7 +259,12 @@ export default function HabitVisualization({ habit, logs }) {
 		<div className="space-y-8">
 			{/* Full Heatmap (like Github contributions) */}
 			<div className="bg-white p-4 rounded-lg shadow">
-				<h3 className="text-lg font-medium mb-4">Completion History</h3>
+				<h3 className="text-lg font-medium mb-2">Completion History</h3>
+				<p className="text-sm text-gray-500 mb-4">
+					Each square represents a day - darker blue squares show
+					completed days, with intensity showing values when
+					applicable.
+				</p>
 				<div className="flex flex-wrap gap-1">
 					{heatmapData.map((day, i) => (
 						<div
@@ -294,8 +299,12 @@ export default function HabitVisualization({ habit, logs }) {
 
 			{/* Weekly Pattern */}
 			<div className="bg-white p-4 rounded-lg shadow">
-				<h3 className="text-lg font-medium mb-4">Weekly Patterns</h3>
-				<div className="spcce-y-2">
+				<h3 className="text-lg font-medium mb-2">Weekly Patterns</h3>
+				<p className="text-sm text-gray-500 mb-4">
+					See which days of the week you're most consistent with -
+					longer bars indicate higher completion rates.
+				</p>
+				<div className="space-y-2">
 					{weekdayData.map((day) => (
 						<div key={day.day} className="flex items-center">
 							<div className="w-24 text-sm">{day.day}</div>
@@ -315,7 +324,11 @@ export default function HabitVisualization({ habit, logs }) {
 
 			{/* Monthly Trend */}
 			<div className="bg-white p-4 rounded-lg shadow">
-				<h3 className="text-lg font-medium mb-4">Monthly Trend</h3>
+				<h3 className="text-lg font-medium mb-2">Monthly Trend</h3>
+				<p className="text-sm text-gray-500 mb-4">
+					Track your consistency month-by-month - longer bars show
+					months with more completions.
+				</p>
 
 				<div className="mt-4">
 					{monthlyData.length > 0 ? (
@@ -362,7 +375,11 @@ export default function HabitVisualization({ habit, logs }) {
 			{/* If habit has units, show value chart */}
 			{habit.unit && (
 				<div className="bg-white p-4 rounded-lg shadow">
-					<h3 className="text-lg font-medium mb-4">Value Tracking</h3>
+					<h3 className="text-lg font-medium mb-2">Value Tracking</h3>
+					<p className="text-sm text-gray-500 mb-4">
+						Track your {habit.unit} measurements over time - see
+						your average and highest values.
+					</p>
 					<p className="text-gray-500 text-sm">
 						Average: {calculateAverage(logs)} {habit.unit}
 					</p>

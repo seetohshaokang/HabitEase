@@ -6,11 +6,15 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import {
 	deleteHabit,
+	deleteHabitLog,
 	getHabit,
 	getHabitLogs,
 	getHabitStatistics,
 	logHabit,
+	updateHabitLog,
 } from "../../lib/api";
+
+import EditLogModal from "../../components/EditLogModal";
 
 export default function HabitDetail({ params }) {
 	const id = params.id; // Explicitly match structure that Next.js provides
@@ -22,6 +26,7 @@ export default function HabitDetail({ params }) {
 	const [stats, setStats] = useState(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [isDeleting, setIsDeleting] = useState(false);
+	const [editingLog, setEditingLog] = useState(null);
 
 	useEffect(() => {
 		if (!loading && token) {
@@ -74,6 +79,24 @@ export default function HabitDetail({ params }) {
 		}
 	};
 
+	const handleUpdateLog = async (logId, data) => {
+		try {
+			await updateHabitLog(token, logId, data);
+			loadHabitData(); // Refresh data
+		} catch (error) {
+			console.error("Error updating log:", error);
+		}
+	};
+
+	const handleDeleteLog = async (logId) => {
+		try {
+			await deleteHabitLog(token, logId);
+			loadHabitData(); // Refresh data
+		} catch (error) {
+			console.error("Error deleting log:", error);
+		}
+	};
+
 	const handleDeleteHabit = async () => {
 		if (
 			!confirm(
@@ -90,6 +113,11 @@ export default function HabitDetail({ params }) {
 		} catch (error) {
 			console.error("Error deleting habit:", error);
 			setIsDeleting(false);
+		}
+	};
+	const confirmDeleteLog = (logId) => {
+		if (confirm("Are you sure you want to delete this log entry?")) {
+			handleDeleteLog(logId);
 		}
 	};
 
@@ -111,7 +139,6 @@ export default function HabitDetail({ params }) {
 					← Back
 				</button>
 			</div>
-
 			<div className="flex justify-between items-start mb-6">
 				<div>
 					<h1 className="text-3xl font-bold flex items-center">
@@ -144,7 +171,6 @@ export default function HabitDetail({ params }) {
 					</button>
 				</div>
 			</div>
-
 			{/* Statistics Section */}
 			{stats && (
 				<div className="bg-white rounded-lg shadow p-4 mb-6">
@@ -189,7 +215,6 @@ export default function HabitDetail({ params }) {
 					)}
 				</div>
 			)}
-
 			{/* Today&apos;s Status and Action */}
 			<div className="bg-white rounded-lg shadow p-4 mb-6">
 				<h2 className="text-xl font-semibold mb-3">Today</h2>
@@ -219,8 +244,7 @@ export default function HabitDetail({ params }) {
 				)}
 			</div>
 
-			{/* Recent Activity */}
-			<div className="bg-white rounded-lg shadow p-4">
+			<div className="bg-white rounded-lg shadow p-4 mb-8">
 				<h2 className="text-xl font-semibold mb-3">Recent Activity</h2>
 
 				{logs.length === 0 ? (
@@ -241,6 +265,9 @@ export default function HabitDetail({ params }) {
 											Value
 										</th>
 									)}
+									<th className="px-4 py-2 text-right text-sm font-medium text-gray-500">
+										Actions
+									</th>
 								</tr>
 							</thead>
 							<tbody className="divide-y divide-gray-200">
@@ -266,15 +293,76 @@ export default function HabitDetail({ params }) {
 													{log.value || "-"}
 												</td>
 											)}
+											<td className="px-4 py-3 text-right">
+												<div className="flex justify-end space-x-2">
+													<button
+														onClick={() =>
+															setEditingLog(log)
+														}
+														className="px-2 py-1 text-xs rounded bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 transition-colors flex items-center"
+													>
+														<svg
+															xmlns="http://www.w3.org/2000/svg"
+															className="h-3 w-3 mr-1"
+															fill="none"
+															viewBox="0 0 24 24"
+															stroke="currentColor"
+														>
+															<path
+																strokeLinecap="round"
+																strokeLinejoin="round"
+																strokeWidth={2}
+																d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+															/>
+														</svg>
+														Edit
+													</button>
+													<button
+														onClick={() =>
+															confirmDeleteLog(
+																log._id
+															)
+														}
+														className="px-2 py-1 text-xs rounded bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 transition-colors flex items-center"
+													>
+														<svg
+															xmlns="http://www.w3.org/2000/svg"
+															className="h-3 w-3 mr-1"
+															fill="none"
+															viewBox="0 0 24 24"
+															stroke="currentColor"
+														>
+															<path
+																strokeLinecap="round"
+																strokeLinejoin="round"
+																strokeWidth={2}
+																d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+															/>
+														</svg>
+														Delete
+													</button>
+												</div>
+											</td>
 										</tr>
 									))}
 							</tbody>
 						</table>
 					</div>
 				)}
+
+				{/* Edit Log Modal */}
+				{editingLog && (
+					<EditLogModal
+						log={editingLog}
+						habit={habit}
+						onUpdate={handleUpdateLog}
+						onDelete={handleDeleteLog}
+						onClose={() => setEditingLog(null)}
+					/>
+				)}
 			</div>
 			{/* Habit Visualizations */}
-			<div className="mb-6">
+			<div className="mt-8">
 				<HabitVisualizations habit={habit} logs={logs} />
 			</div>
 		</div>

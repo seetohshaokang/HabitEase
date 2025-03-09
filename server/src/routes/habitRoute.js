@@ -9,6 +9,7 @@ import {
 	getHabitStatistics,
 	getHabits,
 	logHabit,
+	updateHabit,
 	updateHabitLog,
 } from "../controllers/habitController.js"; // ✅ Fixed typo
 import { generateSampleData } from "../controllers/sampleDataController.js";
@@ -24,6 +25,8 @@ router.post("/", verifyToken, addHabit);
 
 // ✅ Log habit completion
 router.put("/:id/complete", verifyToken, logHabit);
+
+router.put("/:id", verifyToken, updateHabit);
 
 // Load sample data
 router.post("/sample-data", verifyToken, generateSampleData);

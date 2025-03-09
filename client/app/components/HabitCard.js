@@ -1,17 +1,18 @@
+// components/HabitCard.js
 "use client";
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { logHabit } from "../lib/api";
+import LogHabitModal from "./LogHabitModal";
 import MiniHeatMap from "./MiniHeatmap";
 
-export default function Habitcard({ habit, onComplete }) {
+export default function HabitCard({ habit, onComplete }) {
 	const { token } = useAuth();
 	const router = useRouter();
 	const [isLogging, setIsLogging] = useState(false);
-	const [showUnitInput, setShowUnitInput] = useState(false);
-	const [unitValue, setUnitValue] = useState("");
+	const [showLogModal, setShowLogModal] = useState(false);
 
 	// Check if habit was completed today
 	const isCompletedToday = () => {
@@ -26,22 +27,12 @@ export default function Habitcard({ habit, onComplete }) {
 
 	const completed = isCompletedToday();
 
-	const handleLogHabit = async () => {
-		if (isLogging) return; // Now matches the state variable name
-
-		// If this habit has a unit define and we're not showing the input yet
-		if (habit.unit && !showUnitInput && !completed) {
-			setShowUnitInput(true);
-			return;
-		}
+	const handleLogHabit = async (habitId, value) => {
+		if (isLogging) return;
 
 		try {
 			setIsLogging(true);
-			// Pass the unit value if entered, otherwise null
-			const value = unitValue.trim() !== "" ? unitValue : null;
-			await logHabit(token, habit._id, value);
-			setShowUnitInput(false);
-			setUnitValue("");
+			await logHabit(token, habitId, value);
 			onComplete(); // Refresh habits after logging
 		} catch (error) {
 			console.error("Error logging habit:", error);
@@ -51,96 +42,89 @@ export default function Habitcard({ habit, onComplete }) {
 	};
 
 	const handleCardClick = () => {
-		// Make sure the ID is a string before passing to router
 		const habitId = habit._id ? habit._id.toString() : habit._id;
 		console.log("Navigating to habit:", habitId);
 		router.push(`/habits/${habit._id}`);
 	};
 
-	const handleUnitInputChange = (e) => {
-		setUnitValue(e.target.value);
-	};
-
-	const handleUnitInputKeyDown = (e) => {
-		if (e.key === "Enter") {
-			handleLogHabit();
-		}
-	};
-
 	return (
-		<div
-			className={`rounded-lg p-4 shadow-md transition-all cursor-pointer
-                ${
-					completed
-						? "bg-green-50 border-green-200"
-						: "bg-white border-gray-200"
-				} 
-                border hover:shadow-lg`}
-		>
-			<div className="flex items-start justify-between">
-				<div className="flex-1" onClick={handleCardClick}>
-					<div className="text-3xl mb-2">{habit.logo}</div>{" "}
-					{/* Changed from log to logo */}
-					<h3 className="font-semibold text-lg">{habit.name}</h3>
-					{habit.streak > 0 && (
-						<div className="flex items-center mt-1 text-sm text-orange-500">
-							<span className="mr-1">🔥</span>
-							<span>{habit.streak} day streak</span>
-						</div>
-					)}
-				</div>
-
-				{showUnitInput && habit.unit ? (
-					<div
-						className="flex items-center"
-						onClick={(e) => e.stopPropagation()}
-					>
-						<input
-							type="text"
-							value={unitValue}
-							onChange={handleUnitInputChange}
-							onKeyDown={handleUnitInputKeyDown}
-							placeholder={`Enter ${habit.unit}`}
-							className="border rounded px-2 py-2 text-sm mr-2 w-16"
-							autoFocus
-						/>
-						<button
-							onClick={handleLogHabit}
-							className="rounded-full w-10 h-10 flex items-center justify-center bg-green-100 hover:bg-green-200 text-green-600"
-						>
-							✓
-						</button>
+		<>
+			<div
+				className={`rounded-lg p-4 shadow-md transition-all cursor-pointer
+          ${
+				completed
+					? "bg-green-50 border-green-200"
+					: "bg-white border-gray-200"
+			} 
+          border hover:shadow-lg`}
+			>
+				<div className="flex items-start justify-between">
+					<div className="flex-1" onClick={handleCardClick}>
+						<div className="text-3xl mb-2">{habit.logo}</div>
+						<h3 className="font-semibold text-lg">{habit.name}</h3>
+						{habit.streak > 0 && (
+							<div className="flex items-center mt-1 text-sm text-orange-500">
+								<span className="mr-1">🔥</span>
+								<span>
+									{habit.streak === 1
+										? "1 day streak - just getting started!"
+										: habit.streak < 5
+										? `${habit.streak} day streak - keep it up!`
+										: `${habit.streak} day streak - you're on fire!`}
+								</span>
+							</div>
+						)}
 					</div>
-				) : (
+
 					<button
 						onClick={(e) => {
 							e.stopPropagation();
-							handleLogHabit();
+							if (!completed) {
+								setShowLogModal(true);
+							}
 						}}
-						disabled={isLogging || completed} // Now matches the state variable name
+						disabled={isLogging || completed}
 						className={`rounded-full w-10 h-10 flex items-center justify-center transition-colors
-                        ${
-							completed
-								? "bg-green-500 text-white cursor-default"
-								: "bg-gray-100 hover:bg-green-100 text-gray-500 hover:text-green-500"
-						}`}
+              ${
+					completed
+						? "bg-green-500 text-white cursor-default"
+						: "bg-gray-100 hover:bg-green-100 text-gray-500 hover:text-green-500"
+				}`}
 					>
 						{completed ? "✓" : "+"}
 					</button>
-				)}
+				</div>
+
+				<div className="mt-3">
+					<p className="text-sm text-gray-500 mb-1">
+						{completed
+							? `✓ Completed today - great job!`
+							: "Ready to track today's progress"}
+						{habit.unit && (
+							<span className="ml-1">
+								{`(You track this in ${habit.unit})`}
+							</span>
+						)}
+					</p>
+
+					{/* Add Mini Heatmap with better description */}
+					<div className="mt-2">
+						<p className="text-xs text-gray-400 mb-1">
+							Your last 14 days:
+						</p>
+						<MiniHeatMap logs={habit.logs || []} />
+					</div>
+				</div>
 			</div>
 
-			<div className="mt-3 text-sm text-gray-500">
-				{completed ? `Completed today` : "Not completed today"}
-				{habit.unit && (
-					<span className="ml-1">
-						{habit.unit && "(Tracks in " + habit.unit + ")"}
-					</span>
-				)}
-
-				{/* Add Mini Heatmap */}
-				<MiniHeatMap logs={habit.logs || []} />
-			</div>
-		</div>
+			{/* Log Habit Modal */}
+			{showLogModal && (
+				<LogHabitModal
+					habit={habit}
+					onComplete={handleLogHabit}
+					onClose={() => setShowLogModal(false)}
+				/>
+			)}
+		</>
 	);
 }

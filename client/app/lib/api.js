@@ -64,6 +64,7 @@ export const createHabit = async (token, habitData) => {
 	return response.json();
 };
 
+// Add or update this function in lib/api.js
 export const updateHabit = async (token, habitId, habitData) => {
 	const response = await fetch(`${API_URL}/habits/${habitId}`, {
 		method: "PUT",
@@ -75,6 +76,8 @@ export const updateHabit = async (token, habitId, habitData) => {
 	});
 
 	if (!response.ok) {
+		const errorText = await response.text();
+		console.error(`API error: ${errorText}`);
 		throw new Error("Failed to update habit");
 	}
 
@@ -159,6 +162,38 @@ export const generateSampleData = async (token) => {
 
 	if (!response.ok) {
 		throw new Error("Failed to generate sample data");
+	}
+
+	return response.json();
+};
+
+export const updateHabitLog = async (token, logId, data) => {
+	const response = await fetch(`${API_URL}/habits/log/${logId}`, {
+		method: "PUT",
+		headers: {
+			Authorization: `Bearer ${token}`,
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify(data),
+	});
+
+	if (!response.ok) {
+		throw new Error("Failed to update habit log");
+	}
+
+	return response.json();
+};
+
+export const deleteHabitLog = async (token, logId) => {
+	const response = await fetch(`${API_URL}/habits/log/${logId}`, {
+		method: "DELETE",
+		headers: {
+			Authorization: `Bearer ${token}`,
+		},
+	});
+
+	if (!response.ok) {
+		throw new Error("Failed to delete habit log");
 	}
 
 	return response.json();

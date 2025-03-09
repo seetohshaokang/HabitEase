@@ -45,6 +45,31 @@ export const addHabit = async (req, res) => {
 	}
 };
 
+export const updateHabit = async (req, res) => {
+	try {
+		const { id } = req.params;
+		const userId = req.user.userId;
+		const { name, logo, unit } = req.body;
+
+		const updatedHabit = await Habit.findOneAndUpdate(
+			{ _id: id, userId },
+			{ name, logo, unit },
+			{ new: true }
+		);
+
+		if (!updatedHabit) {
+			return res
+				.status(404)
+				.json({ message: "Habit not found or unauthorized" });
+		}
+
+		res.status(200).json(updatedHabit);
+	} catch (error) {
+		console.error("Error updating habit:", error);
+		res.status(500).json({ message: "Error updating habit", error });
+	}
+};
+
 // ✅ Delete a habit (only for the logged-in user)
 export const deleteHabit = async (req, res) => {
 	try {
