@@ -1,11 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function HabitVisualization({ habit, logs }) {
 	const [weekdayData, setWeekdayData] = useState([]);
 	const [monthlyData, setMonthlyData] = useState([]);
 	const [heatmapData, setHeatmapData] = useState([]);
+	const [tooltip, setTooltip] = useState({
+		visible: false,
+		text: "",
+		x: 0,
+		y: 0,
+	});
+	const heatmapRef = useRef(null);
 
 	useEffect(() => {
 		console.log("HabitVisualization received props:", { habit, logs });
@@ -257,7 +264,7 @@ export default function HabitVisualization({ habit, logs }) {
 
 	return (
 		<div className="space-y-8">
-			{/* Full Heatmap (like Github contributions) */}
+			{/* Full Heatmap with Enhanced Tooltip */}
 			<div className="bg-white p-4 rounded-lg shadow">
 				<h3 className="text-lg font-medium mb-2">Completion History</h3>
 				<p className="text-sm text-gray-500 mb-4">
@@ -265,34 +272,88 @@ export default function HabitVisualization({ habit, logs }) {
 					completed days, with intensity showing values when
 					applicable.
 				</p>
-				<div className="flex flex-wrap gap-1">
-					{heatmapData.map((day, i) => (
+				<div className="flex flex-wrap gap-1 relative" ref={heatmapRef}>
+					{heatmapData.map((day, i) => {
+						// Format the date for display
+						const dayDate = new Date(day.dateStr);
+						const formattedDate = dayDate.toLocaleDateString(
+							undefined,
+							{
+								weekday: "short",
+								month: "short",
+								day: "numeric",
+							}
+						);
+
+						// Create meaningful tooltip content
+						const tooltipText =
+							day.value !== null
+								? habit.unit
+									? `${formattedDate}: ${day.value} ${habit.unit}`
+									: `${formattedDate}: Completed`
+								: `${formattedDate}: Not completed`;
+
+						return (
+							<div
+								key={i}
+								className={`w-3 h-3 rounded-sm ${getHeatmapColor(
+									day.value,
+									habit.unit
+								)} hover:ring-2 hover:ring-blue-300 transition-all duration-200 cursor-pointer`}
+								onMouseEnter={(e) => {
+									// Get position relative to the heatmap container
+									const rect =
+										e.target.getBoundingClientRect();
+									const containerRect =
+										heatmapRef.current.getBoundingClientRect();
+
+									setTooltip({
+										visible: true,
+										text: tooltipText,
+										x:
+											rect.left -
+											containerRect.left +
+											rect.width / 2,
+										y: -30, // Position just above the heatmap squares
+									});
+								}}
+								onMouseLeave={() =>
+									setTooltip({ ...tooltip, visible: false })
+								}
+							/>
+						);
+					})}
+
+					{/* Custom Tooltip */}
+					{tooltip.visible && (
 						<div
-							key={i}
-							className={`w-3 h-3 rounded-sm ${getHeatmapColor(
-								day.value,
-								habit.unit
-							)}`}
-							title={`${day.dateStr}: ${
-								day.value !== null
-									? habit.unit
-										? `${day.value} ${habit.unit}`
-										: "Completed"
-									: "Not completed"
-							}`}
-						/>
-					))}
+							className="absolute bg-gray-800 text-white text-xs px-2 py-1 rounded shadow-lg z-10 whitespace-nowrap pointer-events-none"
+							style={{
+								left: `${tooltip.x}px`,
+								top: `${tooltip.y}px`,
+								transform: "translateX(-50%)",
+							}}
+						>
+							{tooltip.text}
+						</div>
+					)}
 				</div>
+
 				<div className="flex justify-between text-xs text-gray-500 mt-2">
 					<span>
-						{heatmapData[0]?.date.toLocaleString("default", {
-							month: "short",
-						})}
+						{new Date(heatmapData[0]?.dateStr).toLocaleString(
+							"default",
+							{
+								month: "short",
+							}
+						)}
 					</span>
 					<span>
-						{heatmapData[
-							heatmapData.length - 1
-						]?.date.toLocaleString("default", { month: "short" })}
+						{new Date(
+							heatmapData[heatmapData.length - 1]?.dateStr
+						).toLocaleString("default", {
+							month: "short",
+						})}
 					</span>
 				</div>
 			</div>

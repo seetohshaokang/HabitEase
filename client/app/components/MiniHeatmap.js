@@ -1,25 +1,30 @@
+// Updated MiniHeatmap.js
 "use client";
 
 import { useEffect, useState } from "react";
 
 export default function MiniHeatMap({ logs }) {
 	const [heatmapData, setHeatmapData] = useState([]);
+	const [isLoading, setIsLoading] = useState(true);
+
 	useEffect(() => {
+		setIsLoading(true);
+
 		if (!logs || logs.length === 0) {
 			setHeatmapData(generateEmptyHeatmap());
+			setIsLoading(false);
 			return;
 		}
 
 		// Process logs to generate heatmap data
 		generateHeatmapData(logs);
+		setIsLoading(false);
 	}, [logs]);
 
 	const generateEmptyHeatmap = () => {
 		// Create empty 2-week heatmap (14 days)
 		const data = [];
 		for (let i = 13; i >= 0; i--) {
-			// Last 2 weeks for mini heatmap hence 13 days
-
 			const date = new Date();
 			date.setDate(date.getDate() - i);
 			data.push({
@@ -41,7 +46,7 @@ export default function MiniHeatMap({ logs }) {
 			logDates[dateStr] = log.value || true; // Store value if available, otherwise just mark completed
 		});
 
-		// Merge lod converted dates into empty heatmap
+		// Merge log converted dates into empty heatmap
 		const mergedData = data.map((day) => ({
 			...day,
 			value: logDates[day.date] || null,
@@ -57,7 +62,6 @@ export default function MiniHeatMap({ logs }) {
 		// If value is a number (for habits with units), adjust intensity based on value
 		if (typeof value === "number") {
 			// Simple scale: Higher values = darker green
-			// Can be adjusted based on specific habit's typical values
 			if (value > 100) return "bg-green-800";
 			if (value > 75) return "bg-green-700";
 			if (value > 50) return "bg-green-600";
@@ -69,15 +73,35 @@ export default function MiniHeatMap({ logs }) {
 		return "bg-green-500";
 	};
 
+	if (isLoading) {
+		return (
+			<div className="flex gap-1 mt-2">
+				{[...Array(14)].map((_, i) => (
+					<div
+						key={i}
+						className="w-3 h-3 rounded-sm bg-gray-200 animate-pulse"
+					></div>
+				))}
+			</div>
+		);
+	}
+
+	// Add tooltips to show the exact date on hover
 	return (
 		<div className="flex flex-wrap gap-1 mt-2">
 			{heatmapData.map((day, index) => (
 				<div
 					key={index}
-					className={`w-3 h-3 rounded-sm ${getCellColor(day.value)}`}
+					className={`w-3 h-3 rounded-sm ${getCellColor(
+						day.value
+					)} transition-colors duration-200 hover:ring-2 hover:ring-blue-300`}
 					title={
 						day.date +
-						(day.value ? "- Completed" : " - Not completed")
+						(day.value
+							? day.value === true
+								? " - Completed"
+								: ` - ${day.value} completed`
+							: " - Not completed")
 					}
 				></div>
 			))}

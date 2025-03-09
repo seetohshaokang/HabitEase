@@ -7,14 +7,39 @@ export const getToken = async () => {
 	return response.json();
 };
 
-// Habit APi calls
+// Habit API calls
 export const fetchHabits = async (token) => {
+	// First fetch all habits
 	const response = await fetch(`${API_URL}/habits`, {
 		headers: {
 			Authorization: `Bearer ${token}`,
 		},
 	});
-	return response.json();
+
+	const habits = await response.json();
+
+	// If we have habits, fetch logs for each one
+	if (Array.isArray(habits) && habits.length > 0) {
+		// Fetch logs for each habit
+		const habitsWithLogs = await Promise.all(
+			habits.map(async (habit) => {
+				try {
+					const logs = await getHabitLogs(token, habit._id);
+					return { ...habit, logs };
+				} catch (error) {
+					console.error(
+						`Error fetching logs for habit ${habit._id}:`,
+						error
+					);
+					return { ...habit, logs: [] };
+				}
+			})
+		);
+
+		return habitsWithLogs;
+	}
+
+	return habits;
 };
 
 export const getHabit = async (token, habitId) => {
